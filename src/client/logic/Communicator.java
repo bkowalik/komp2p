@@ -6,11 +6,25 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class Communicator {
-    protected Message inMessage;
-    protected Message outMessage;
     protected Socket socket;
-    protected ConcurrentLinkedQueue<Message> incommingMessages;
-    protected ConcurrentLinkedQueue<Message> outcommingMessages;
+    final ConcurrentLinkedQueue<Message> inMessages = new ConcurrentLinkedQueue<Message>();
+    final ConcurrentLinkedQueue<Message> outMessages = new ConcurrentLinkedQueue<Message>();
 
     public abstract void start();
+
+    /**
+     * Zwraca i <b>usuwa</b> wiadomość z kolejki
+     * @return wiadomośc
+     */
+    public Message readMessage() {
+        return inMessages.poll();
+    }
+
+    /**
+     * Dopisuje wiadomość do kolejki
+     * @param msg wiadomość
+     */
+    public void writeMessage(Message msg) {
+        outMessages.add(msg);
+    }
 }

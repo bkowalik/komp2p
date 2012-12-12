@@ -1,10 +1,7 @@
 package client.logic;
 
-import agh.po.Message;
-
 import javax.net.SocketFactory;
 import java.io.*;
-import java.net.Socket;
 
 public class Client extends Communicator {
     private DataInputStream input;

@@ -26,8 +26,8 @@ public class Host extends Communicator {
         InWorker inWorker = null;
         OutWorker outWorker = null;
         try {
-            inWorker = new InWorker(socket.getInputStream(), incommingMessages);
-            outWorker = new OutWorker(socket.getOutputStream(), outcommingMessages);
+            inWorker = new InWorker(socket.getInputStream(), inMessages);
+            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
         } catch(IOException e) {
             e.printStackTrace();
         }
