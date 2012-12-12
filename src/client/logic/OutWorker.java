@@ -19,10 +19,12 @@ public class OutWorker implements Runnable {
 
     @Override
     public void run() {
-        Message msg = messages.poll();
-        if(msg != null) {
-            try { output.writeObject(msg); }
-            catch(IOException e) { e.printStackTrace(); }
+        while(!Thread.interrupted()){
+            Message msg = messages.poll();
+            if(msg != null) {
+                try { output.writeObject(msg); }
+                catch(IOException e) { e.printStackTrace(); }
+            }
         }
     }
 

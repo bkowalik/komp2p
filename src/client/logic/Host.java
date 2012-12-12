@@ -13,28 +13,6 @@ public class Host extends Communicator {
     public Host(int port) throws IOException {
         PORT = port;
         server = ServerSocketFactory.getDefault().createServerSocket(PORT);
-    }
-
-    public void start() {
-        try {
-            socket = server.accept();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-
-        ExecutorService exec = Executors.newFixedThreadPool(2);
-        InWorker inWorker = null;
-        OutWorker outWorker = null;
-        try {
-            inWorker = new InWorker(socket.getInputStream(), inMessages);
-            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-
-        while(true) {
-            exec.execute(inWorker);
-            exec.execute(outWorker);
-        }
+        socket = server.accept();
     }
 }

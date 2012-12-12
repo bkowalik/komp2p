@@ -22,15 +22,15 @@ public class InWorker implements Runnable {
 
     @Override
     public void run() {
-        try {
-            if(input.available() > 0) {
-                Message msg = (Message) input.readObject();
-                messages.add(msg);
+        while(!Thread.interrupted()) {
+            try {
+                if(input.available() > 0) {
+                    Message msg = (Message) input.readObject();
+                    messages.add(msg);
+                }
             }
-        } catch(IOException e) {
-            e.printStackTrace();
-        } catch(ClassNotFoundException e) {
-            e.printStackTrace();
+            catch(IOException e) { e.printStackTrace(); }
+            catch(ClassNotFoundException e) { e.printStackTrace(); }
         }
     }
 
