@@ -1,9 +1,11 @@
 package client.logic;
 
 import agh.po.Message;
+import client.logic.events.NetEventListener;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,6 +14,7 @@ public abstract class Communicator {
     protected Socket socket;
     final ConcurrentLinkedQueue<Message> inMessages = new ConcurrentLinkedQueue<Message>();
     final ConcurrentLinkedQueue<Message> outMessages = new ConcurrentLinkedQueue<Message>();
+    private LinkedList<NetEventListener> listeners = new LinkedList<NetEventListener>();
 
     public void start() {
         ExecutorService exec = Executors.newFixedThreadPool(2);
@@ -42,5 +45,15 @@ public abstract class Communicator {
      */
     public void writeMessage(Message msg) {
         outMessages.add(msg);
+    }
+
+    public synchronized void addOnMessageListener(NetEventListener lst) {
+        listeners.add(lst);
+    }
+
+    public synchronized void fireOnMessageReceived() {
+        for(NetEventListener nel : listeners) {
+            nel.onMessageIncome();
+        }
     }
 }

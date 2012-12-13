@@ -25,16 +25,11 @@ public class MainWindow extends JFrame {
         setJMenuBar(jMenuBar);
         initMenuBar();
 
-        talkPanel = new TalkPanel();
         settingsPanel = new SettingsPanel();
+        talkPanel = new TalkPanel();
 
-        jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-        jTabbedPane.add("Talk", talkPanel);
-        jTabbedPane.add("Settings", settingsPanel);
-        jTabbedPane.setSelectedIndex(1);
-
-        add(jTabbedPane);
-//        switchGui();
+        add(settingsPanel);
+        switchGui();
         setCentered();
         setVisible(true);
     }
@@ -54,11 +49,9 @@ public class MainWindow extends JFrame {
 
     private void switchGui() {
         if(talking) {
-            jTabbedPane.setEnabledAt(0, true);
-            jTabbedPane.setEnabledAt(1, false);
+
         } else {
-            jTabbedPane.setEnabledAt(0, false);
-            jTabbedPane.setEnabledAt(1, true);
+
         }
     }
 }
