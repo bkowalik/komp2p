@@ -10,4 +10,9 @@ public class Message implements Serializable {
         this.id = id;
         this.msg = msg;
     }
+
+    @Override
+    public String toString() {
+        return id + ": " + msg;
+    }
 }

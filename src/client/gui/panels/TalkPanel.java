@@ -1,12 +1,13 @@
 package client.gui.panels;
 
 
+import client.logic.events.NetEventListener;
 import sun.rmi.runtime.NewThreadAction;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class TalkPanel extends JPanel {
+public class TalkPanel extends JPanel implements NetEventListener {
     private JSplitPane jSplitPane;
     private JTextArea message;
     private JTextArea log;
@@ -21,5 +22,10 @@ public class TalkPanel extends JPanel {
         jSplitPane.setResizeWeight(0.7);
 
         add(jSplitPane, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void onMessageIncome() {
+        //TODO: Wprowadzić zdarzenie
     }
 }

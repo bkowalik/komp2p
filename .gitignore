@@ -1,6 +1,7 @@
 ﻿*.iml
 *.class
 
-Komunikator.iml
+komunikator.iml
 bin/
 .idea/
+out/

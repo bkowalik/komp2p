@@ -5,6 +5,7 @@ import client.gui.menus.FileMenu;
 import client.gui.menus.HelpMenu;
 import client.gui.panels.SettingsPanel;
 import client.gui.panels.TalkPanel;
+import client.logic.events.NetEventListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,6 +33,10 @@ public class MainWindow extends JFrame {
         switchGui();
         setCentered();
         setVisible(true);
+    }
+
+    public NetEventListener getNetEventListener() {
+        return talkPanel;
     }
 
     protected final void setCentered() {
