@@ -13,6 +13,11 @@ public class Host extends Communicator {
     public Host(int port) throws IOException {
         PORT = port;
         server = ServerSocketFactory.getDefault().createServerSocket(PORT);
-        socket = server.accept();
+    }
+
+    public void start() {
+        try { socket = server.accept(); }
+        catch(IOException e) { e.printStackTrace(); }
+        super.start();
     }
 }

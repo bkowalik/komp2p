@@ -7,6 +7,7 @@ import client.logic.Host;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.sql.*;
 import java.util.Queue;
 import java.util.Scanner;
 

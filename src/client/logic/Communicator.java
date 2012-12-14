@@ -12,16 +12,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public abstract class Communicator extends Thread {
+public abstract class Communicator {
     protected Socket socket;
     final ConcurrentLinkedQueue<Message> inMessages = new ConcurrentLinkedQueue<Message>();
     final ConcurrentLinkedQueue<Message> outMessages = new ConcurrentLinkedQueue<Message>();
     private LinkedList<NetEventListener> listeners = new LinkedList<NetEventListener>();
+    protected InWorker inWorker;
+    protected OutWorker outWorker;
+    private ExecutorService exec = Executors.newFixedThreadPool(2);
 
-    public void start() {
-        ExecutorService exec = Executors.newFixedThreadPool(2);
-        InWorker inWorker = null;
-        OutWorker outWorker = null;
+    protected void initialize() {
         try {
             inWorker = new InWorker(socket.getInputStream(), inMessages);
             outWorker = new OutWorker(socket.getOutputStream(), outMessages);
@@ -29,14 +29,17 @@ public abstract class Communicator extends Thread {
             e.printStackTrace();
         }
 
+    }
+
+    public void start() {
         exec.execute(inWorker);
         exec.execute(outWorker);
     }
 
-    @Override
-    public void run() {
-
-    }
+//    @Override
+//    public void run() {
+//
+//    }
 
     /**
      * Zwraca i <b>usuwa</b> wiadomość z kolejki

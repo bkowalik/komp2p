@@ -15,6 +15,8 @@ public class Client extends Communicator {
 
 
     public void start() {
-
+        try { socket.connect(socket.getRemoteSocketAddress(), 5); }
+        catch(IOException e) { e.printStackTrace(); }
+        super.start();
     }
 }
