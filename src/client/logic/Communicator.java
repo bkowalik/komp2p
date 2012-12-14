@@ -3,16 +3,14 @@ package client.logic;
 import agh.po.Message;
 import client.logic.events.NetEventListener;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public abstract class Communicator {
+public abstract class Communicator extends Thread {
     protected Socket socket;
     final ConcurrentLinkedQueue<Message> inMessages = new ConcurrentLinkedQueue<Message>();
     final ConcurrentLinkedQueue<Message> outMessages = new ConcurrentLinkedQueue<Message>();
@@ -21,25 +19,8 @@ public abstract class Communicator {
     protected OutWorker outWorker;
     private ExecutorService exec = Executors.newFixedThreadPool(2);
 
-    protected void initialize() {
-        try {
-            inWorker = new InWorker(socket.getInputStream(), inMessages);
-            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void start() {
-        exec.execute(inWorker);
-        exec.execute(outWorker);
-    }
-
-//    @Override
-//    public void run() {
-//
-//    }
+    protected abstract void initialize();
+    public abstract void run();
 
     /**
      * Zwraca i <b>usuwa</b> wiadomość z kolejki
@@ -69,5 +50,9 @@ public abstract class Communicator {
         for(NetEventListener nel : listeners) {
             nel.onMessageIncome();
         }
+    }
+
+    protected void execute(Runnable r) {
+        exec.execute(r);
     }
 }

@@ -1,10 +1,8 @@
 package client.logic;
 
-import javax.net.ServerSocketFactory;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Host extends Communicator {
     private final ServerSocket server;
@@ -12,12 +10,22 @@ public class Host extends Communicator {
 
     public Host(int port) throws IOException {
         PORT = port;
-        server = ServerSocketFactory.getDefault().createServerSocket(PORT);
+        server = new ServerSocket(port);
+        initialize();
     }
 
-    public void start() {
+    protected void initialize() {
         try { socket = server.accept(); }
         catch(IOException e) { e.printStackTrace(); }
-        super.start();
+        try {
+            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
+            inWorker = new InWorker(socket.getInputStream(), inMessages);
+        } catch(IOException e) { e.printStackTrace(); }
+    }
+
+    @Override
+    public void run() {
+        execute(outWorker);
+        execute(inWorker);
     }
 }

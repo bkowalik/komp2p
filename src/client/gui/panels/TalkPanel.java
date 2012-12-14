@@ -2,7 +2,6 @@ package client.gui.panels;
 
 
 import client.logic.events.NetEventListener;
-import sun.rmi.runtime.NewThreadAction;
 
 import javax.swing.*;
 import java.awt.*;

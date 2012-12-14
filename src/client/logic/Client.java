@@ -1,22 +1,32 @@
 package client.logic;
 
-import javax.net.SocketFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 public class Client extends Communicator {
-    private DataInputStream input;
-    private DataOutputStream output;
+    private InetSocketAddress address;
 
     public Client(String address, int port) throws IOException {
-        socket = SocketFactory.getDefault().createSocket(address, port);
-        input = new DataInputStream(socket.getInputStream());
-        output = new DataOutputStream(socket.getOutputStream());
+        this.address = new InetSocketAddress(address, port);
+        socket = new Socket(address, port);
+        initialize();
     }
 
 
-    public void start() {
-        try { socket.connect(socket.getRemoteSocketAddress(), 5); }
-        catch(IOException e) { e.printStackTrace(); }
-        super.start();
+    protected void initialize() {
+        try {
+            inWorker = new InWorker(socket.getInputStream(), inMessages);
+            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
+        } catch(IOException e) { e.printStackTrace(); }
+    }
+
+    @Override
+    public void run() {
+        execute(inWorker);
+        execute(outWorker);
     }
 }

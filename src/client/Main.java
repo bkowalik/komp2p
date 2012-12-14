@@ -3,73 +3,53 @@ package client;
 import agh.po.Message;
 import client.gui.MainWindow;
 import client.logic.Client;
+import client.logic.Communicator;
 import client.logic.Host;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.sql.*;
 import java.util.Queue;
 import java.util.Scanner;
 
-/**
- * 0 - Host
- * 1 - Client
- */
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
 //        runGui();
     }
 
     public static void runConsole(String[] args) throws IOException {
+        Communicator com;
+        String id = "HOST";
         if(args.length == 0) {
-            runHost(44321, "HOST");
+            com = new Host(44321);
         } else {
             if(args[0].toLowerCase().equals("host")) {
                 int port = Integer.valueOf(args[1]);
-                String id = args[2];
-                runHost(port, id);
+                id = args[2];
+                com = new Host(port);
             } else if(args[0].toLowerCase().equals("client")) {
                 String host = args[1];
                 int port = Integer.valueOf(args[2]);
-                String id = args[3];
-                runClient(host, port, id);
+                id = args[3];
+                com = new Client(host, port);
             } else throw new IllegalArgumentException("Nie można tak");
         }
-    }
 
-    protected static void runClient(String host, int port, String id) throws IOException {
-        System.out.println("Launching client");
-        Client client = new Client(host, port);
-        client.start();
+        com.start();
         Scanner in = new Scanner(System.in);
+        System.out.println("Odpalam czat");
         while(true) {
-            System.out.println("Czekam na wiadomość...");
             System.out.println(id + ": ");
-            String msg = in.nextLine();
+            String msg = "";
+            if(in.hasNextLine())
+                msg = in.nextLine();
             if(!msg.equals("")) {
-                client.writeMessage(new Message(id, msg));
+                com.writeMessage(new Message(id, msg));
             }
-            Queue<Message> q = client.getAllIncommingMsgs();
-            while(!q.isEmpty()) System.out.println(q.poll());
-            System.out.println();
-        }
-    }
+            Queue<Message> q = com.getAllIncommingMsgs();
 
-    protected static void runHost(int port, String id) throws IOException {
-        System.out.println("Launching host");
-        Host host = new Host(port);
-        host.start();
-        Scanner in = new Scanner(System.in);
-        while(true) {
-            System.out.println("Czekam na wiadomość...");
-            System.out.println(id + ": ");
-            String msg = in.nextLine();
-            if(!msg.equals("")) {
-                host.writeMessage(new Message(id, msg));
-            }
-            Queue<Message> q = host.getAllIncommingMsgs();
+            if(!q.isEmpty()) System.out.println("Odczytuje wiadomości:");
             while(!q.isEmpty()) System.out.println(q.poll());
             System.out.println();
         }
