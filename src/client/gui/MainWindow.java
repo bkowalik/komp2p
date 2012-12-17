@@ -11,15 +11,14 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
+    public static final String APP_NAME = "Komunikator";
     protected static final int WINDOW_HEIGHT = 400;
     protected static final int WINDOW_WIDTH = 400;
     private JMenuBar jMenuBar;
-    private JTabbedPane jTabbedPane;
-    private TalkPanel talkPanel;
     private SettingsPanel settingsPanel;
-    private boolean talking;
 
     public MainWindow() {
+        super(MainWindow.APP_NAME);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         jMenuBar = new JMenuBar();
@@ -27,16 +26,9 @@ public class MainWindow extends JFrame {
         initMenuBar();
 
         settingsPanel = new SettingsPanel();
-        talkPanel = new TalkPanel();
-
         add(settingsPanel);
-        switchGui();
         setCentered();
         setVisible(true);
-    }
-
-    public NetEventListener getNetEventListener() {
-        return talkPanel;
     }
 
     protected final void setCentered() {
@@ -50,13 +42,5 @@ public class MainWindow extends JFrame {
     private void initMenuBar() {
         jMenuBar.add(new FileMenu("File"));
         jMenuBar.add(new HelpMenu("Help"));
-    }
-
-    private void switchGui() {
-        if(talking) {
-
-        } else {
-
-        }
     }
 }
