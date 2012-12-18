@@ -15,7 +15,8 @@ public class Host extends Communicator {
     }
 
     protected void initialize() {
-        try { socket = server.accept(); }
+        try { socket = server.accept();
+            socket.shutdownOutput();}
         catch(IOException e) { e.printStackTrace(); }
         try {
             outWorker = new OutWorker(socket.getOutputStream(), outMessages);

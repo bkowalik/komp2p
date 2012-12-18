@@ -13,6 +13,7 @@ public class Client extends Communicator {
     public Client(String address, int port) throws IOException {
         this.address = new InetSocketAddress(address, port);
         socket = new Socket(address, port);
+//        socket.shutdownOutput();
         initialize();
     }
 

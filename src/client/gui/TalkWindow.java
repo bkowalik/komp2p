@@ -16,6 +16,9 @@ public class TalkWindow extends JFrame {
 
         talkPanel = new TalkPanel();
         add(talkPanel);
+
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setVisible(true);
     }
 
     private JPanel setupBtns() {

@@ -14,8 +14,8 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-//        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
-        runGui();
+        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
+//        runGui();
     }
 
     public static void runConsole(String[] args) throws IOException {

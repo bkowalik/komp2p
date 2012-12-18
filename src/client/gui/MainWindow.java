@@ -15,6 +15,8 @@ public class MainWindow extends JFrame {
     protected static final int WINDOW_HEIGHT = 400;
     protected static final int WINDOW_WIDTH = 400;
     private JMenuBar jMenuBar;
+    private JTabbedPane jTabbedPane;
+    private TalkPanel talkPanel;
     private SettingsPanel settingsPanel;
 
     public MainWindow() {
@@ -26,7 +28,13 @@ public class MainWindow extends JFrame {
         initMenuBar();
 
         settingsPanel = new SettingsPanel();
-        add(settingsPanel);
+        talkPanel = new TalkPanel();
+
+        jTabbedPane = new JTabbedPane();
+        jTabbedPane.add("Ustawienia", settingsPanel);
+        jTabbedPane.add("Rozmowa", talkPanel);
+        add(jTabbedPane);
+        switchGui(GuiState.IDLE);
         setCentered();
         setVisible(true);
     }
@@ -42,5 +50,18 @@ public class MainWindow extends JFrame {
     private void initMenuBar() {
         jMenuBar.add(new FileMenu("File"));
         jMenuBar.add(new HelpMenu("Help"));
+    }
+
+    void switchGui(GuiState state) {
+        switch (state) {
+            case TALKING:
+                break;
+            case LISTENING:
+                break;
+            case IDLE:
+                jTabbedPane.setEnabledAt(0, true);
+                jTabbedPane.setEnabledAt(1, false);
+                break;
+        }
     }
 }
