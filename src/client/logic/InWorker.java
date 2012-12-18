@@ -3,10 +3,8 @@ package client.logic;
 
 import agh.po.Message;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -17,7 +15,7 @@ public class InWorker implements Runnable {
     protected final ObjectInputStream input;
 
     public InWorker(InputStream in, ConcurrentLinkedQueue<Message> messages) throws IOException {
-        input = new ObjectInputStream(in);
+        input = new ObjectInputStream(new BufferedInputStream(in));
         this.messages = messages;
     }
 

@@ -3,10 +3,12 @@ package client.logic;
 
 import agh.po.Message;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class OutWorker implements Runnable {
@@ -14,7 +16,8 @@ public class OutWorker implements Runnable {
     protected final ConcurrentLinkedQueue<Message> messages;
 
     public OutWorker(OutputStream out, ConcurrentLinkedQueue<Message> messages) throws IOException {
-        output = new ObjectOutputStream(out);
+        output = new ObjectOutputStream(new BufferedOutputStream(out));
+        output.flush();
         this.messages = messages;
     }
 
@@ -23,11 +26,17 @@ public class OutWorker implements Runnable {
         while(!Thread.interrupted()) {
             Message msg = messages.poll();
             if(msg != null) {
-                try { output.writeObject(msg); }
+                try {
+                    output.writeObject(msg);
+                    output.flush();
+                    output.reset();
+                }
                 catch(SocketException e) {
+                    e.printStackTrace();
                     break;
                 }
                 catch(IOException e) {
+                    e.printStackTrace();
                     break;
                 }
             }

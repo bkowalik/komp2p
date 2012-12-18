@@ -2,14 +2,15 @@ package client;
 
 import agh.po.Message;
 import client.gui.MainWindow;
+import client.logic.AbstractCommunicator;
 import client.logic.Client;
-import client.logic.Communicator;
 import client.logic.Host;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
 
 public class Main {
 
@@ -19,7 +20,7 @@ public class Main {
     }
 
     public static void runConsole(String[] args) throws IOException {
-        Communicator com;
+        AbstractCommunicator com;
         String id = "HOST";
         if(args.length == 0) {
             com = new Host(44321);
@@ -47,8 +48,8 @@ public class Main {
             if(!msg.equals("")) {
                 com.writeMessage(new Message(id, msg));
             }
-            Queue<Message> q = com.getAllIncommingMsgs();
 
+            Queue<Message> q = com.getAllIncommingMsgs();
             if(!q.isEmpty()) System.out.println("Odczytuje wiadomości:");
             while(!q.isEmpty()) System.out.println(q.poll());
             System.out.println();
