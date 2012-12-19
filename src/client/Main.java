@@ -13,8 +13,8 @@ public class Main {
     protected static final int DEFAULT_PORT = 44321;
 
     public static void main(String[] args) throws IOException {
-        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
-//        runGui();
+//        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
+        runGui();
     }
 
     public static void runConsole(String[] args) throws IOException {
@@ -58,6 +58,7 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+//                new MainWindow();
                 new MainWindow();
             }
         });

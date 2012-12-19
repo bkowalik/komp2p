@@ -1,30 +1,28 @@
 package client.gui.panels;
 
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 
-import client.gui.events.NetEventListener;
+public class TalkPanel extends JPanel {
 
-import javax.swing.*;
-import java.awt.*;
-
-public class TalkPanel extends JPanel implements NetEventListener {
-    private JSplitPane jSplitPane;
-    private JTextArea message;
-    private JTextArea log;
-
+    private JTextArea msgLog;
+    private JTextArea msgTxt;
+    
     public TalkPanel() {
-        super(new BorderLayout());
-        message = new JTextArea();
-        log = new JTextArea();
-        JScrollPane logPane = new JScrollPane(log, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        JScrollPane messagePane = new JScrollPane(message, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, logPane, messagePane);
-        jSplitPane.setResizeWeight(0.7);
-
-        add(jSplitPane, BorderLayout.CENTER);
+        msgLog = new JTextArea();
+        msgTxt = new JTextArea();
+        
+        JScrollPane scrollMsgLog = new JScrollPane(msgLog);
+        
+        JScrollPane scrollMsgTxt = new JScrollPane(msgTxt);
+        
+        JSplitPane jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        jSplitPane.add(scrollMsgLog);
+        jSplitPane.add(scrollMsgTxt);
+        
+        add(jSplitPane);
     }
 
-    @Override
-    public void onMessageIncome() {
-        //TODO: Wprowadzić zdarzenie
-    }
 }

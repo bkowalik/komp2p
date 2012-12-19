@@ -3,7 +3,6 @@ package client.exceptions;
 
 public class ComException extends Exception {
     public ComException() {
-
     }
 
     public ComException(String message) {
