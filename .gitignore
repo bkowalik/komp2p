@@ -1,6 +1,11 @@
 ﻿*.iml
 *.class
+.classpath
+.project
 
+Komunikator.iml
+Komunikator.eml
+Komunikator.userlibraries
 komunikator.iml
 bin/
 .idea/

@@ -1,4 +1,4 @@
-package client.logic.events;
+package client.gui.events;
 
 
 import java.util.EventListener;

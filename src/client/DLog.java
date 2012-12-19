@@ -8,6 +8,7 @@ public final class DLog {
     public static boolean DEBUG = true;
 
     public static void info(String msg) {
-        logger.info(msg);
+        if(DEBUG)
+            logger.info(msg);
     }
 }

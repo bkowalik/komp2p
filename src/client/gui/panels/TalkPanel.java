@@ -1,7 +1,7 @@
 package client.gui.panels;
 
 
-import client.logic.events.NetEventListener;
+import client.gui.events.NetEventListener;
 
 import javax.swing.*;
 import java.awt.*;

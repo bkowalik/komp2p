@@ -5,7 +5,6 @@ import client.gui.menus.FileMenu;
 import client.gui.menus.HelpMenu;
 import client.gui.panels.SettingsPanel;
 import client.gui.panels.TalkPanel;
-import client.logic.events.NetEventListener;
 
 import javax.swing.*;
 import java.awt.*;
