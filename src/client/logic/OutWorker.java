@@ -2,6 +2,7 @@ package client.logic;
 
 
 import agh.po.Message;
+import sun.misc.MessageUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class OutWorker implements Runnable {
 
     public OutWorker(OutputStream out, ConcurrentLinkedQueue<Message> messages) throws IOException {
         output = new ObjectOutputStream(new BufferedOutputStream(out));
+//        output = new ObjectOutputStream(out);
         output.flush();
         this.messages = messages;
     }

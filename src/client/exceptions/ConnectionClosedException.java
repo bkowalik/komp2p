@@ -1,4 +1,5 @@
 package client.exceptions;
 
-public class ConnectionClosedException extends ComException {
+public class ConnectionClosedException extends RuntimeException {
+
 }

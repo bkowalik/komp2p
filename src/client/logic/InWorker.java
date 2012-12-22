@@ -2,6 +2,9 @@ package client.logic;
 
 
 import agh.po.Message;
+import client.DLog;
+import client.exceptions.BadMessageException;
+import client.exceptions.ConnectionClosedException;
 
 import java.io.*;
 import java.util.concurrent.BlockingQueue;
@@ -16,6 +19,7 @@ public class InWorker implements Runnable {
 
     public InWorker(InputStream in, ConcurrentLinkedQueue<Message> messages) throws IOException {
         input = new ObjectInputStream(new BufferedInputStream(in));
+//        input = new ObjectInputStream(in);
         this.messages = messages;
     }
 
@@ -33,13 +37,14 @@ public class InWorker implements Runnable {
             }
             catch(EOFException e) {
                 System.out.println("Zdalny host zakończył połączenie.");
-                break;
+                try { input.close(); } catch(IOException ex) {}
+                throw new ConnectionClosedException();
             }
             catch(IOException e) {
                 e.printStackTrace();
                 break;
             }
-            catch(ClassNotFoundException e) { e.printStackTrace(); }
+            catch(ClassNotFoundException e) { DLog.warn(e.getMessage()); }
         }
         try { input.close(); } catch(IOException ex) {}
     }

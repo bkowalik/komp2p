@@ -11,4 +11,9 @@ public final class DLog {
         if(DEBUG)
             logger.info(msg);
     }
+
+    public static void warn(String msg) {
+        if(DEBUG)
+            logger.warning(msg);
+    }
 }

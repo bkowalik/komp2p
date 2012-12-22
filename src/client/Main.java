@@ -1,6 +1,7 @@
 package client;
 
 import agh.po.Message;
+import client.exceptions.ComException;
 import client.gui.MainWindow;
 import client.logic.Com;
 
@@ -12,12 +13,13 @@ import java.util.Scanner;
 public class Main {
     protected static final int DEFAULT_PORT = 44321;
 
-    public static void main(String[] args) throws IOException {
-//        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
-        runGui();
+    public static void main(String[] args) {
+        try { runConsole(args); } catch(IOException e) { e.printStackTrace(); }
+        catch(ComException e) { e.printStackTrace(); }
+//        runGui();
     }
 
-    public static void runConsole(String[] args) throws IOException {
+    public static void runConsole(String[] args) throws IOException, ComException {
         Com com;
         String id = "HOST";
         if(args.length == 0) {
@@ -49,12 +51,17 @@ public class Main {
 
             Queue<Message> q = com.getPendingMessages();
             if(!q.isEmpty()) System.out.println("Odczytuje wiadomości:");
-            while(!q.isEmpty()) System.out.println(q.poll());
+            while(!q.isEmpty()) {
+                Message m = q.poll();
+//                System.out.println(m.id + ": " + m.msg);
+                System.out.println(m);
+            }
             System.out.println();
         }
     }
 
     public static void runGui() {
+           
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

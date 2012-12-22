@@ -1,6 +1,9 @@
 package client.logic;
 
 import agh.po.Message;
+import client.DLog;
+import client.exceptions.ComException;
+import client.exceptions.ConnectionTimeoutException;
 import client.gui.events.NetEventListener;
 
 import java.io.IOException;
@@ -38,14 +41,14 @@ public abstract class Com {
         }
 
         @Override
-        public void initialize() {
+        public void initialize() throws ComException {
             try {
                 server.setSoTimeout(DEFAULT_TIMEOUT);
-                server.accept();
+                socket = server.accept();
             } catch(SocketException e) {
                 e.printStackTrace();
             } catch(SocketTimeoutException e) {
-                e.printStackTrace();
+                throw new ConnectionTimeoutException();
             } catch(IOException e) {
                 e.printStackTrace();
             }
@@ -70,9 +73,15 @@ public abstract class Com {
      * @return
      * @throws IOException
      */
-    public static Com newClient(String address, int port) throws IOException {
+    public static Com newClient(String address, int port) throws ComException {
         if(address.isEmpty() || (port < 1)) throw new IllegalArgumentException("");
-        Client cl = new Client(address, port);
+        Client cl = null;
+        try {
+            cl = new Client(address, port);
+        } catch(IOException e) {
+            DLog.warn(e.getMessage());
+            throw new ComException("");
+        }
         cl.initialize();
         return cl;
     }
@@ -83,9 +92,17 @@ public abstract class Com {
      * @return
      * @throws IOException
      */
-    public static Com newHost(int port) throws IOException {
+    public static Com newHost(int port) throws ComException {
         if(port < 1) throw new IllegalArgumentException("");
-        Host h = new Host(port);
+        Host h = null;
+
+        try {
+            h = new Host(port);
+        } catch(IOException e) {
+            DLog.warn(e.getMessage());
+            throw new ComException(e.getMessage());
+        }
+
         h.initialize();
         return h;
     }
@@ -93,11 +110,11 @@ public abstract class Com {
     /**
      *
      */
-    protected void initialize() {
+    public void initialize() throws ComException {
         try {
             outWorker = new OutWorker(socket.getOutputStream(), outMessages);
             inWorker = new InWorker(socket.getInputStream(), inMessages);
-        } catch(IOException e) { e.printStackTrace(); }
+        } catch(IOException e) { DLog.warn(e.getMessage()); }
     }
 
     /**
