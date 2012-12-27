@@ -38,11 +38,11 @@ public class OutWorker implements Runnable {
                         output.reset();
                     } catch (SocketException e) {
                         e.printStackTrace();
-                        fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
+                        fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
                         break;
                     } catch (IOException e) {
                         e.printStackTrace();
-                        fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
+                        fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
                         break;
                     }
                 }
@@ -53,7 +53,7 @@ public class OutWorker implements Runnable {
         }
     }
 
-    protected synchronized void fireErrorEvent(ConnectionEvent event) {
+    protected synchronized void fireConnectionEvent(ConnectionEvent event) {
         for(ConnectionListener e : conListeners) {
             e.onConnectionEvent(event);
         }

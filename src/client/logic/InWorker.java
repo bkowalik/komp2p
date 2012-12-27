@@ -44,16 +44,16 @@ public class InWorker implements Runnable /*Callable<Void>*/ {
                 }
             } catch (SocketException e) {
                 DLog.warn(e.getMessage());
-                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
                 break;
             } catch(EOFException e) {
                 System.out.println("Zdalny host zakończył połączenie.");
-                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.EOFException));
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.EOFException));
                 try { input.close(); } catch(IOException ex) {}
                 throw new ConnectionClosedException();
             } catch(IOException e) {
                 e.printStackTrace();
-                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
                 break;
             }
             catch(ClassNotFoundException e) { DLog.warn(e.getMessage()); }
@@ -61,7 +61,7 @@ public class InWorker implements Runnable /*Callable<Void>*/ {
         try { input.close(); } catch(IOException ex) {}
     }
     
-    protected synchronized void fireErrorEvent(ConnectionEvent event) {
+    protected synchronized void fireConnectionEvent(ConnectionEvent event) {
         for(ConnectionListener els : conListeners) {
             els.onConnectionEvent(event);
         }
