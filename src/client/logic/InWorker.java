@@ -1,12 +1,12 @@
 package client.logic;
 
-
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Queue;
 
@@ -20,12 +20,13 @@ import client.exception.ConnectionClosedException;
 /**
  * Przyjmuje wiadomości przychodzące
  */
-public class InWorker implements Runnable /*Callable<Void>*/ {
+public class InWorker implements Runnable /* Callable<Void> */{
     protected final Queue<Message> messages;
     protected final ObjectInputStream input;
     private final List<ConnectionListener> conListeners;
 
-    public InWorker(InputStream in, Queue<Message> messages, List<ConnectionListener> cls) throws IOException {
+    public InWorker(InputStream in, Queue<Message> messages,
+            List<ConnectionListener> cls) throws IOException {
         input = new ObjectInputStream(new BufferedInputStream(in));
         this.messages = messages;
         conListeners = cls;
@@ -33,38 +34,48 @@ public class InWorker implements Runnable /*Callable<Void>*/ {
 
     @Override
     public void run() {
-        while(!Thread.interrupted()) {
+        while (!Thread.interrupted()) {
             try {
-                if(input.available() != -1) {
-                    Message msg = null;
-                    Object obj = input.readObject();
-                    if(!(obj instanceof  Message)) continue;
-                    msg = (Message) obj;
-                    messages.add(msg);
-                }
+                Message msg = null;
+                Object obj = input.readObject();
+                if (!(obj instanceof Message))
+                    continue;
+                msg = (Message) obj;
+                messages.add(msg);
             } catch (SocketException e) {
                 DLog.warn(e.getMessage());
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                        Type.SocketException));
                 break;
-            } catch(EOFException e) {
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.EOFException));
+            } catch (SocketTimeoutException e) {
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                        Type.TimeoutException));
                 break;
-            } catch(IOException e) {
+            } catch (EOFException e) {
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                        Type.EOFException));
+                break;
+            } catch (IOException e) {
                 e.printStackTrace();
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                        Type.IOException));
                 break;
+            } catch (ClassNotFoundException e) {
+                DLog.warn(e.getMessage());
             }
-            catch(ClassNotFoundException e) { DLog.warn(e.getMessage()); }
         }
-        try { input.close(); } catch(IOException ex) {}
+        try {
+            input.close();
+        } catch (IOException ex) {
+        }
     }
-    
+
     protected synchronized void fireConnectionEvent(ConnectionEvent event) {
-        for(ConnectionListener els : conListeners) {
+        for (ConnectionListener els : conListeners) {
             els.onConnectionEvent(event);
         }
     }
-    
+
     @Override
     protected void finalize() throws Throwable {
         input.close();
