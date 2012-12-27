@@ -14,8 +14,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import agh.po.Message;
 import client.DLog;
+import client.event.ConnectionEvent;
 import client.event.ConnectionListener;
 import client.event.MessageListener;
+import client.event.ConnectionEvent.Type;
 import client.exception.BadIdException;
 import client.exception.BadPortException;
 import client.exception.ComException;
@@ -23,10 +25,9 @@ import client.exception.ConnectionTimeoutException;
 import client.exception.HostException;
 
 public abstract class Com {
-    static final int MAX_PORT = 65535;
-    static final int MIN_PORT = 0;
-    
-    public static final int DEFAULT_TIMEOUT = 60000;
+    public static final int MAX_PORT = 65535;
+    public static final int MIN_PORT = 0;
+    public static final int DEFAULT_TIMEOUT = 30000;
     public static final int DEFAULT_PORT = 44321;
     
     protected Socket socket;
@@ -35,6 +36,8 @@ public abstract class Com {
     protected Dispatcher dispatcher;
     protected String id;
     protected ExecutorService exec = Executors.newFixedThreadPool(3);
+    
+    private boolean runnign;
     
     private final BlockingQueue<Message> inMessages = new LinkedBlockingQueue<Message>();
     private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
@@ -55,6 +58,14 @@ public abstract class Com {
         protected void initialize() throws IOException {
             socket = server.accept();
             super.initialize();
+        }
+        
+        @Override
+        public synchronized void stop() {
+            super.stop();
+            try {
+                server.close();
+            } catch (IOException e) { DLog.warn(e.getMessage()); }
         }
     }
 
@@ -104,10 +115,32 @@ public abstract class Com {
         try {
             host.initialize();
         } catch (SocketTimeoutException e) {
+            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
             throw new ConnectionTimeoutException();
         } catch (IOException e) {
-            e.printStackTrace();
+            DLog.warn(e.getMessage());
+            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
         }
+        
+//        try {
+//            final Host host = new Host(port, timeout, id);
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        host.initialize();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }   
+//                }
+//            }).start();
+//            return host;
+//        } catch(IOException e) {
+//            e.printStackTrace();
+//            throw new ComException();
+//        }
+//        
+//        return null;  
         
         return host;
     }
@@ -120,6 +153,7 @@ public abstract class Com {
             inWorker = new InWorker(socket.getInputStream(), inMessages, conListener);
         } catch (IOException e) {
             DLog.warn(e.getMessage());
+            stop();
             throw new IOException(e.getCause());
         }
         dispatcher = new Dispatcher(inMessages, msgsListeners);
@@ -137,14 +171,17 @@ public abstract class Com {
         exec.execute(outWorker);
         exec.execute(inWorker);
         exec.execute(dispatcher);
+        runnign = true;
     }
 
     public synchronized void stop() {
+        if(!runnign) return;
         exec.shutdownNow();
         try {
             socket.close();
         } catch (IOException e) {
         }
+        runnign = false;
     }
 
     public synchronized void addMessageListener(MessageListener lst) {
@@ -155,8 +192,14 @@ public abstract class Com {
         conListener.add(lst);
     }
     
+    public synchronized void fireConnectionEvent(ConnectionEvent event) {
+        for(ConnectionListener c : conListener)
+            c.onConnectionEvent(event);
+    }
+    
     public void writeMessage(String msg) {
-        outMessages.add(new Message(id, msg));
+        if(runnign)
+            outMessages.add(new Message(id, msg));
     }
 
     public BlockingQueue<Message> getPendingMessages() {

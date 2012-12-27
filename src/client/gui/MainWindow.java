@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -11,12 +13,18 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingUtilities;
 
+import client.DLog;
 import client.exception.ComException;
+import client.exception.ConnectionTimeoutException;
+import client.exception.HostException;
 import client.logic.Com;
 
 public class MainWindow extends JFrame {
@@ -78,28 +86,62 @@ public class MainWindow extends JFrame {
         btnConnect = new JButton("Połącz");
         btnConnect.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                int port = Integer.parseInt(fieldPort.getText());
-                Com c = null;
+                int port = 0;
                 try {
-                    c = Com.newClient(fieldHost.getText(), port, 60000, fieldNick.getText());
+                    if(fieldPort.getText().equals("") && fieldNick.getText().equals("") && fieldHost.getText().equals("")) {
+                        JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
+                        return;
+                    }
+                    port = Integer.parseInt(fieldPort.getText());
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+                    return;
+                }
+                
+                try {
+                    final Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_TIMEOUT, fieldNick.getText()); 
+                    SwingUtilities.invokeLater(new Runnable() { 
+                        @Override
+                        public void run() {
+                            MainWindow.this.setVisible(false);
+                            TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());                        
+                        }
+                    });
+                } catch(HostException e) {
+                    JOptionPane.showMessageDialog(MainWindow.this, "Host nieosiągalny", "Błąd", JOptionPane.ERROR_MESSAGE, null);
                 } catch (ComException e) {
                     e.printStackTrace();
                 }
-                new TalkWindow(c);
             }
         });
         
         btnHost = new JButton("Hostuj");
         btnHost.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                int port = Integer.parseInt(fieldPort.getText());
-                Com c = null;
+                int port = 0;
                 try {
-                    c = Com.newHost(port, 60000, fieldNick.getText());
-                } catch (ComException e1) {
-                    e1.printStackTrace();
+                    if(fieldPort.getText().equals("") || fieldNick.getText().equals("")) {
+                        JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
+                        return;
+                    }
+                    port = Integer.parseInt(fieldPort.getText());
+                } catch(NumberFormatException e) {
+                    JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+                    return;
                 }
-                new TalkWindow(c);
+
+                try {  
+                    final Com c = Com.newHost(port, Com.DEFAULT_TIMEOUT, fieldNick.getText());                     
+//                    SwingUtilities.invokeLater(new Runnable() { 
+//                        @Override
+//                        public void run() {
+                            MainWindow.this.setVisible(false);
+                            new TalkWindow(MainWindow.this, c, fieldNick.getText());                        
+//                        }
+//                    });
+                } catch (ComException e) {
+                    e.printStackTrace();
+                }
             }
         });
         GroupLayout gl_panel = new GroupLayout(panel);

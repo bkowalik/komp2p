@@ -47,10 +47,8 @@ public class InWorker implements Runnable /*Callable<Void>*/ {
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
                 break;
             } catch(EOFException e) {
-                System.out.println("Zdalny host zakończył połączenie.");
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.EOFException));
-                try { input.close(); } catch(IOException ex) {}
-                throw new ConnectionClosedException();
+                break;
             } catch(IOException e) {
                 e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));

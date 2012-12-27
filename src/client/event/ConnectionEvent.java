@@ -21,7 +21,7 @@ public class ConnectionEvent extends EventObject {
         return cause;
     }
     
-    public Type getError() {
+    public Type getType() {
         return type;
     }
 }

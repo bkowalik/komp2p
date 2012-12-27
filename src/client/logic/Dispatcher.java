@@ -26,9 +26,7 @@ public class Dispatcher implements Runnable {
             event = null;
             try {
                 msg = messages.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            } catch (InterruptedException e) { break; }
             event = new MessageEvent(this, msg);
             for(MessageListener lst : listeners)
                 lst.onMessageReceived(event);
