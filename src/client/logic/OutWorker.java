@@ -1,51 +1,65 @@
 package client.logic;
 
-
-import agh.po.Message;
-import sun.misc.MessageUtils;
-
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+
+import agh.po.Message;
+import client.event.ConnectionEvent;
+import client.event.ConnectionEvent.Type;
+import client.event.ConnectionListener;
 
 public class OutWorker implements Runnable {
-    protected final ObjectOutputStream output;
-    protected final ConcurrentLinkedQueue<Message> messages;
+    private final ObjectOutputStream output;
+    private final BlockingQueue<Message> messages;
+    private final List<ConnectionListener> conListeners;
 
-    public OutWorker(OutputStream out, ConcurrentLinkedQueue<Message> messages) throws IOException {
+    public OutWorker(OutputStream out, BlockingQueue<Message> messages, List<ConnectionListener> cls)
+            throws IOException {
         output = new ObjectOutputStream(new BufferedOutputStream(out));
-//        output = new ObjectOutputStream(out);
         output.flush();
         this.messages = messages;
+        conListeners = cls;
     }
 
     @Override
     public void run() {
-        while(!Thread.interrupted()) {
-            Message msg = messages.poll();
-            if(msg != null) {
-                try {
-                    output.writeObject(msg);
-                    output.flush();
-                    output.reset();
-                }
-                catch(SocketException e) {
-                    e.printStackTrace();
-                    break;
-                }
-                catch(IOException e) {
-                    e.printStackTrace();
-                    break;
+        try {
+            while (!Thread.interrupted()) {
+                Message msg = messages.take();
+                if (msg != null) {
+                    try {
+                        output.writeObject(msg);
+                        output.flush();
+                        output.reset();
+                    } catch (SocketException e) {
+                        e.printStackTrace();
+                        fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
+                        break;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
+                        break;
+                    }
                 }
             }
+        } catch (InterruptedException e) {
+        } finally {
+            try { output.close(); } catch (IOException ex) {}
         }
-        try { output.close(); } catch(IOException ex) {}
     }
 
+    protected synchronized void fireErrorEvent(ConnectionEvent event) {
+        for(ConnectionListener e : conListeners) {
+            e.onConnectionEvent(event);
+        }
+    }
+    
+    @Override
     protected void finalize() throws Throwable {
         output.close();
         super.finalize();

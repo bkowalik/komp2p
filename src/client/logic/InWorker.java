@@ -1,26 +1,34 @@
 package client.logic;
 
 
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.net.SocketException;
+import java.util.List;
+import java.util.Queue;
+
 import agh.po.Message;
 import client.DLog;
-import client.exceptions.BadMessageException;
-import client.exceptions.ConnectionClosedException;
-
-import java.io.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import client.event.ConnectionEvent;
+import client.event.ConnectionEvent.Type;
+import client.event.ConnectionListener;
+import client.exception.ConnectionClosedException;
 
 /**
  * Przyjmuje wiadomości przychodzące
  */
-public class InWorker implements Runnable {
-    protected final ConcurrentLinkedQueue<Message> messages;
+public class InWorker implements Runnable /*Callable<Void>*/ {
+    protected final Queue<Message> messages;
     protected final ObjectInputStream input;
+    private final List<ConnectionListener> conListeners;
 
-    public InWorker(InputStream in, ConcurrentLinkedQueue<Message> messages) throws IOException {
+    public InWorker(InputStream in, Queue<Message> messages, List<ConnectionListener> cls) throws IOException {
         input = new ObjectInputStream(new BufferedInputStream(in));
-//        input = new ObjectInputStream(in);
         this.messages = messages;
+        conListeners = cls;
     }
 
     @Override
@@ -34,21 +42,31 @@ public class InWorker implements Runnable {
                     msg = (Message) obj;
                     messages.add(msg);
                 }
-            }
-            catch(EOFException e) {
+            } catch (SocketException e) {
+                DLog.warn(e.getMessage());
+                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
+                break;
+            } catch(EOFException e) {
                 System.out.println("Zdalny host zakończył połączenie.");
+                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.EOFException));
                 try { input.close(); } catch(IOException ex) {}
                 throw new ConnectionClosedException();
-            }
-            catch(IOException e) {
+            } catch(IOException e) {
                 e.printStackTrace();
+                fireErrorEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
                 break;
             }
             catch(ClassNotFoundException e) { DLog.warn(e.getMessage()); }
         }
         try { input.close(); } catch(IOException ex) {}
     }
-
+    
+    protected synchronized void fireErrorEvent(ConnectionEvent event) {
+        for(ConnectionListener els : conListeners) {
+            els.onConnectionEvent(event);
+        }
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         input.close();

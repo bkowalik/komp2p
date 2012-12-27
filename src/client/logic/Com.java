@@ -1,157 +1,169 @@
 package client.logic;
 
-import agh.po.Message;
-import client.DLog;
-import client.exceptions.ComException;
-import client.exceptions.ConnectionTimeoutException;
-import client.gui.events.NetEventListener;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- *
- */
+import agh.po.Message;
+import client.DLog;
+import client.event.ConnectionListener;
+import client.event.MessageListener;
+import client.exception.BadIdException;
+import client.exception.BadPortException;
+import client.exception.ComException;
+import client.exception.ConnectionTimeoutException;
+import client.exception.HostException;
+
 public abstract class Com {
-    protected static final int DEFAULT_TIMEOUT = 60000;
+    static final int MAX_PORT = 65535;
+    static final int MIN_PORT = 0;
+    
+    public static final int DEFAULT_TIMEOUT = 60000;
+    public static final int DEFAULT_PORT = 44321;
+    
     protected Socket socket;
     protected InWorker inWorker;
     protected OutWorker outWorker;
-    private ExecutorService exec = Executors.newFixedThreadPool(2);
-    private final ConcurrentLinkedQueue<Message> inMessages = new ConcurrentLinkedQueue<Message>();
-    private final ConcurrentLinkedQueue<Message> outMessages = new ConcurrentLinkedQueue<Message>();
-    private LinkedList<NetEventListener> listeners = new LinkedList<NetEventListener>();
+    protected Dispatcher dispatcher;
+    protected String id;
+    protected ExecutorService exec = Executors.newFixedThreadPool(3);
+    
+    private final BlockingQueue<Message> inMessages = new LinkedBlockingQueue<Message>();
+    private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
+    
+    private final List<MessageListener> msgsListeners = new LinkedList<MessageListener>();
+    private final List<ConnectionListener> conListener = new LinkedList<ConnectionListener>();
 
-    /**
-     *
-     */
     private static class Host extends Com {
         private final ServerSocket server;
-        private final int port;
-
-        public Host(int port) throws IOException {
-            this.port = port;
+        
+        public Host(int port, int timeout, String id) throws IOException {
+            this.id = id;
             server = new ServerSocket(port);
+            server.setSoTimeout(timeout);
         }
 
         @Override
-        public void initialize() throws ComException {
-            try {
-                server.setSoTimeout(DEFAULT_TIMEOUT);
-                socket = server.accept();
-            } catch(SocketException e) {
-                e.printStackTrace();
-            } catch(SocketTimeoutException e) {
-                throw new ConnectionTimeoutException();
-            } catch(IOException e) {
-                e.printStackTrace();
-            }
-
+        protected void initialize() throws IOException {
+            socket = server.accept();
             super.initialize();
         }
     }
 
-    /**
-     *
-     */
-    private static class Client extends Com {
-        public Client(String address, int port) throws IOException {
+    private static class Client extends Com {       
+        public Client(String address, int port, int timeout, String id) throws IOException {
+            this.id = id;
             socket = new Socket(address, port);
         }
     }
 
-    /**
-     *
-     * @param address
-     * @param port
-     * @return
-     * @throws IOException
-     */
-    public static Com newClient(String address, int port) throws ComException {
-        if(address.isEmpty() || (port < 1)) throw new IllegalArgumentException("");
-        Client cl = null;
-        try {
-            cl = new Client(address, port);
-        } catch(IOException e) {
-            DLog.warn(e.getMessage());
-            throw new ComException("");
-        }
-        cl.initialize();
-        return cl;
-    }
+    public static Com newClient(String address, int port, int timeout, String id)
+            throws ComException {
+        Com.validateInitData(port, id);
 
-    /**
-     *
-     * @param port
-     * @return
-     * @throws IOException
-     */
-    public static Com newHost(int port) throws ComException {
-        if(port < 1) throw new IllegalArgumentException("");
-        Host h = null;
-
+        Client client = null;
         try {
-            h = new Host(port);
-        } catch(IOException e) {
+            client = new Client(address, port, timeout, id);
+        } catch (UnknownHostException e) {
+            throw new HostException();
+        } catch (IOException e) {
             DLog.warn(e.getMessage());
             throw new ComException(e.getMessage());
         }
 
-        h.initialize();
-        return h;
-    }
-
-    /**
-     *
-     */
-    public void initialize() throws ComException {
         try {
-            outWorker = new OutWorker(socket.getOutputStream(), outMessages);
-            inWorker = new InWorker(socket.getInputStream(), inMessages);
-        } catch(IOException e) { DLog.warn(e.getMessage()); }
+            client.initialize();
+        } catch (SocketTimeoutException e) {
+            throw new ConnectionTimeoutException();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return client;
     }
 
-    /**
-     *
-     */
-    public void start() {
+    public static Com newHost(int port, int timeout, String id)
+            throws ComException {
+        Com.validateInitData(port, id);
+        Host host = null;
+        try {
+            host = new Host(port, timeout, id);
+        } catch (IOException e) {
+            DLog.warn(e.getMessage());
+            throw new ComException(e.getMessage());
+        }
+        
+        try {
+            host.initialize();
+        } catch (SocketTimeoutException e) {
+            throw new ConnectionTimeoutException();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        return host;
+    }
+
+    protected void initialize() throws IOException {
+        if (socket == null)
+            throw new NullPointerException();
+        try {
+            outWorker = new OutWorker(socket.getOutputStream(), outMessages, conListener);
+            inWorker = new InWorker(socket.getInputStream(), inMessages, conListener);
+        } catch (IOException e) {
+            DLog.warn(e.getMessage());
+            throw new IOException(e.getCause());
+        }
+        dispatcher = new Dispatcher(inMessages, msgsListeners);
+    }
+
+    private static void validateInitData(int port, String id)
+            throws BadPortException, BadIdException {
+        if ((port < Com.MIN_PORT) || (port > Com.MAX_PORT))
+            throw new BadPortException();
+        if (id.equals(""))
+            throw new BadIdException();
+    }
+
+    public synchronized void start() {
         exec.execute(outWorker);
         exec.execute(inWorker);
+        exec.execute(dispatcher);
     }
 
-    /**
-     * Zwraca i <b>usuwa</b> wiadomość z kolejki
-     * @return wiadomośc
-     */
-    public Message readMessage() {
-        return inMessages.poll();
+    public synchronized void stop() {
+        exec.shutdownNow();
+        try {
+            socket.close();
+        } catch (IOException e) {
+        }
     }
 
-    /**
-     * Dopisuje wiadomość do kolejki
-     * @param msg wiadomość
-     */
-    public void writeMessage(Message msg) {
-        outMessages.add(msg);
+    public synchronized void addMessageListener(MessageListener lst) {
+        msgsListeners.add(lst);
+    }
+    
+    public synchronized void addConnectionListener(ConnectionListener lst) {
+        conListener.add(lst);
+    }
+    
+    public void writeMessage(String msg) {
+        outMessages.add(new Message(id, msg));
     }
 
-    public Queue<Message> getPendingMessages() {
+    public BlockingQueue<Message> getPendingMessages() {
         return inMessages;
     }
 
-    public synchronized void addOnMessageListener(NetEventListener lst) {
-        listeners.add(lst);
-    }
-
-    public synchronized void fireOnMessageReceived() {
-        for(NetEventListener nel : listeners) {
-            nel.onMessageIncome();
-        }
+    public String getID() {
+        return id;
     }
 }

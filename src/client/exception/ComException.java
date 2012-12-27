@@ -1,4 +1,4 @@
-package client.exceptions;
+package client.exception;
 
 
 public class ComException extends Exception {
