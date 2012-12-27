@@ -27,7 +27,8 @@ import client.exception.HostException;
 public abstract class Com {
     public static final int MAX_PORT = 65535;
     public static final int MIN_PORT = 0;
-    public static final int DEFAULT_TIMEOUT = 30000;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 30000;
+    public static final int DEFAULT_IDLE_TIMEOUT = 2000;
     public static final int DEFAULT_PORT = 44321;
     
     protected Socket socket;
@@ -122,26 +123,6 @@ public abstract class Com {
             try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
         }
         
-//        try {
-//            final Host host = new Host(port, timeout, id);
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        host.initialize();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }   
-//                }
-//            }).start();
-//            return host;
-//        } catch(IOException e) {
-//            e.printStackTrace();
-//            throw new ComException();
-//        }
-//        
-//        return null;  
-        
         return host;
     }
 
@@ -157,6 +138,7 @@ public abstract class Com {
             throw new IOException(e.getCause());
         }
         dispatcher = new Dispatcher(inMessages, msgsListeners);
+        socket.setSoTimeout(DEFAULT_IDLE_TIMEOUT);
     }
 
     private static void validateInitData(int port, String id)
@@ -200,10 +182,6 @@ public abstract class Com {
     public void writeMessage(String msg) {
         if(runnign)
             outMessages.add(new Message(id, msg));
-    }
-
-    public BlockingQueue<Message> getPendingMessages() {
-        return inMessages;
     }
 
     public String getID() {

@@ -72,6 +72,8 @@ public class TalkWindow extends JFrame {
         public void onConnectionEvent(ConnectionEvent event) {
             switch (event.getType()) {
             case RemoteHostDisconnect:
+            case TimeoutException:
+            case SocketException:
             case EOFException:
                 JOptionPane.showMessageDialog(TalkWindow.this,
                         "Rozmówca rozłączył się", "Informacja",

@@ -99,7 +99,7 @@ public class MainWindow extends JFrame {
                 }
                 
                 try {
-                    final Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_TIMEOUT, fieldNick.getText()); 
+                    final Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText()); 
                     SwingUtilities.invokeLater(new Runnable() { 
                         @Override
                         public void run() {
@@ -131,14 +131,14 @@ public class MainWindow extends JFrame {
                 }
 
                 try {  
-                    final Com c = Com.newHost(port, Com.DEFAULT_TIMEOUT, fieldNick.getText());                     
-//                    SwingUtilities.invokeLater(new Runnable() { 
-//                        @Override
-//                        public void run() {
+                    final Com c = Com.newHost(port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());                     
+                    SwingUtilities.invokeLater(new Runnable() { 
+                        @Override
+                        public void run() {
                             MainWindow.this.setVisible(false);
                             new TalkWindow(MainWindow.this, c, fieldNick.getText());                        
-//                        }
-//                    });
+                        }
+                    });
                 } catch (ComException e) {
                     e.printStackTrace();
                 }
