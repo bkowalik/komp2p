@@ -76,7 +76,7 @@ public class TalkWindow extends JFrame {
             case SocketException:
             case EOFException:
                 JOptionPane.showMessageDialog(TalkWindow.this,
-                        "Rozmówca rozłączył się", "Informacja",
+                        "Rozmówca rozłączył się " + event.getType().toString(), "Informacja",
                         JOptionPane.INFORMATION_MESSAGE, null);
                 TalkWindow.this.textMsg.setEnabled(false);
                 TalkWindow.this.btnSend.setEnabled(false);
@@ -90,9 +90,6 @@ public class TalkWindow extends JFrame {
         setTitle("Komunikator - rozmowa jako " + who);
         this.parent = parent;
         com = c;
-        com.addMessageListener(new MessageLstn());
-        com.addConnectionListener(new ConLstn());
-        com.start();
         addWindowListener(new WindowEvents());
         JSplitPane splitPane = new JSplitPane();
         splitPane.setResizeWeight(0.7);
@@ -148,6 +145,10 @@ public class TalkWindow extends JFrame {
         textChat = new JTextArea();
         textChat.setEditable(false);
         scrollPane_1.setViewportView(textChat);
+
+        com.addMessageListener(new MessageLstn());
+        com.addConnectionListener(new ConLstn());
+        com.start();
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

@@ -1,6 +1,8 @@
 package client.logic;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -131,14 +133,14 @@ public abstract class Com {
             throw new NullPointerException();
         try {
             outWorker = new OutWorker(socket.getOutputStream(), outMessages, conListener);
-            inWorker = new InWorker(socket.getInputStream(), inMessages, conListener);
+            inWorker = new InWorker(inMessages, conListener, socket.getInputStream());
         } catch (IOException e) {
             DLog.warn(e.getMessage());
             stop();
             throw new IOException(e.getCause());
         }
         dispatcher = new Dispatcher(inMessages, msgsListeners);
-        socket.setSoTimeout(DEFAULT_IDLE_TIMEOUT);
+//        socket.setSoTimeout(DEFAULT_IDLE_TIMEOUT);
     }
 
     private static void validateInitData(int port, String id)
