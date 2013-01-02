@@ -18,7 +18,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
 import client.event.ConnectionEvent;
-import client.event.ConnectionEvent.Type;
 import client.event.ConnectionListener;
 import client.event.MessageEvent;
 import client.event.MessageListener;
@@ -158,6 +157,7 @@ public class TalkWindow extends JFrame {
 
     private void performSending() {
         String msg = textMsg.getText();
+        if(msg.equals("")) return;
         textMsg.setText("");
         textChat.append(TalkWindow.this.com.getID() + ": " + msg
                 + '\n');

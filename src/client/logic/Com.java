@@ -1,8 +1,6 @@
 package client.logic;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -19,7 +17,6 @@ import client.DLog;
 import client.event.ConnectionEvent;
 import client.event.ConnectionListener;
 import client.event.MessageListener;
-import client.event.ConnectionEvent.Type;
 import client.exception.BadIdException;
 import client.exception.BadPortException;
 import client.exception.ComException;
@@ -54,7 +51,6 @@ public abstract class Com {
         public Host(int port, int timeout, String id) throws IOException {
             this.id = id;
             server = new ServerSocket(port);
-            server.setSoTimeout(timeout);
         }
 
         @Override
@@ -114,7 +110,7 @@ public abstract class Com {
             DLog.warn(e.getMessage());
             throw new ComException(e.getMessage());
         }
-        
+
         try {
             host.initialize();
         } catch (SocketTimeoutException e) {
@@ -124,7 +120,6 @@ public abstract class Com {
             DLog.warn(e.getMessage());
             try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
         }
-        
         return host;
     }
 
@@ -140,7 +135,6 @@ public abstract class Com {
             throw new IOException(e.getCause());
         }
         dispatcher = new Dispatcher(inMessages, msgsListeners);
-//        socket.setSoTimeout(DEFAULT_IDLE_TIMEOUT);
     }
 
     private static void validateInitData(int port, String id)
