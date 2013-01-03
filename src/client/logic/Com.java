@@ -128,7 +128,7 @@ public abstract class Com {
             throw new NullPointerException();
         try {
             outWorker = new OutWorker(socket.getOutputStream(), outMessages, conListener);
-            inWorker = new InWorker(inMessages, conListener, socket.getInputStream());
+            inWorker = new InWorker(socket.getInputStream(), inMessages, conListener);
         } catch (IOException e) {
             DLog.warn(e.getMessage());
             stop();
