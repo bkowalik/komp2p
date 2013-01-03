@@ -74,6 +74,7 @@ public class TalkWindow extends JFrame {
             case TimeoutException:
             case SocketException:
             case EOFException:
+                Thread.interrupted();
                 JOptionPane.showMessageDialog(TalkWindow.this,
                         "Rozmówca rozłączył się " + event.getType().toString(), "Informacja",
                         JOptionPane.INFORMATION_MESSAGE, null);

@@ -43,15 +43,18 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 msg = (Message) obj;
                 messages.add(msg);
             } catch (SocketException e) {
-                DLog.warn(e.getMessage());
+//                DLog.warn(e.getMessage());
+                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.SocketException));
                 break;
             } catch (SocketTimeoutException e) {
+                DLog.warn(e.getMessage());
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.TimeoutException));
                 break;
             } catch (EOFException e) {
+                DLog.warn(e.getMessage());
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.EOFException));
                 break;
