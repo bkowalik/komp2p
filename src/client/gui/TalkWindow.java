@@ -17,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
+import client.DLog;
 import client.event.ConnectionEvent;
 import client.event.ConnectionListener;
 import client.event.MessageEvent;
@@ -70,11 +71,16 @@ public class TalkWindow extends JFrame {
         @Override
         public void onConnectionEvent(ConnectionEvent event) {
             switch (event.getType()) {
+            case ConnectionEstablished:
+                DLog.info(ConnectionEvent.Type.ConnectionEstablished.toString());
+                TalkWindow.this.textChat.append("SYSTEM: Połączenie ustanowione." + '\n');
+                TalkWindow.this.textMsg.setEnabled(true);
+                TalkWindow.this.btnSend.setEnabled(true);
+                break;
             case RemoteHostDisconnect:
             case TimeoutException:
-            case SocketException:
+//            case SocketException:
             case EOFException:
-                Thread.interrupted();
                 JOptionPane.showMessageDialog(TalkWindow.this,
                         "Rozmówca rozłączył się " + event.getType().toString(), "Informacja",
                         JOptionPane.INFORMATION_MESSAGE, null);
@@ -106,6 +112,7 @@ public class TalkWindow extends JFrame {
         splitPane_1.setLeftComponent(scrollPane);
 
         textMsg = new JTextArea();
+        //textMsg.setEnabled(false);
         textMsg.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
@@ -122,6 +129,7 @@ public class TalkWindow extends JFrame {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
         btnSend = new JButton("Wyślij");
+        //btnSend.setEnabled(false);
         btnSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 performSending();
@@ -145,10 +153,10 @@ public class TalkWindow extends JFrame {
         textChat = new JTextArea();
         textChat.setEditable(false);
         scrollPane_1.setViewportView(textChat);
+        //textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
 
         com.addMessageListener(new MessageLstn());
         com.addConnectionListener(new ConLstn());
-        com.start();
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

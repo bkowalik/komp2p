@@ -27,7 +27,7 @@ public class InWorker implements Runnable /* Callable<Void> */{
 
     public InWorker(InputStream in, Queue<Message> messages,
             List<ConnectionListener> cls) throws IOException {
-        input = new ObjectInputStream(new BufferedInputStream(in));
+        input = new ObjectInputStream(/*new BufferedInputStream(in)*/in);
         this.messages = messages;
         conListeners = cls;
     }
@@ -43,18 +43,17 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 msg = (Message) obj;
                 messages.add(msg);
             } catch (SocketException e) {
-//                DLog.warn(e.getMessage());
                 e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.SocketException));
                 break;
             } catch (SocketTimeoutException e) {
-                DLog.warn(e.getMessage());
+                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.TimeoutException));
                 break;
             } catch (EOFException e) {
-                DLog.warn(e.getMessage());
+                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.EOFException));
                 break;
@@ -64,7 +63,7 @@ public class InWorker implements Runnable /* Callable<Void> */{
                         Type.IOException));
                 break;
             } catch (ClassNotFoundException e) {
-                DLog.warn(e.getMessage());
+                e.printStackTrace();
             }
         }
         try {

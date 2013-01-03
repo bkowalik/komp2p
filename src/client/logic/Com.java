@@ -43,37 +43,7 @@ public abstract class Com {
     private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
     
     private final List<MessageListener> msgsListeners = new LinkedList<MessageListener>();
-    private final List<ConnectionListener> conListener = new LinkedList<ConnectionListener>();
-
-    private static class Host extends Com {
-        private final ServerSocket server;
-        
-        public Host(int port, int timeout, String id) throws IOException {
-            this.id = id;
-            server = new ServerSocket(port);
-        }
-
-        @Override
-        protected void initialize() throws IOException {
-            socket = server.accept();
-            super.initialize();
-        }
-        
-        @Override
-        public synchronized void stop() {
-            super.stop();
-            try {
-                server.close();
-            } catch (IOException e) { DLog.warn(e.getMessage()); }
-        }
-    }
-
-    private static class Client extends Com {       
-        public Client(String address, int port, int timeout, String id) throws IOException {
-            this.id = id;
-            socket = new Socket(address, port);
-        }
-    }
+    final List<ConnectionListener> conListener = new LinkedList<ConnectionListener>();
 
     public static Com newClient(String address, int port, int timeout, String id)
             throws ComException {
@@ -97,6 +67,7 @@ public abstract class Com {
             e.printStackTrace();
         }
 
+        client.start();
         return client;
     }
 
@@ -111,15 +82,17 @@ public abstract class Com {
             throw new ComException(e.getMessage());
         }
 
-        try {
-            host.initialize();
-        } catch (SocketTimeoutException e) {
-            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
-            throw new ConnectionTimeoutException();
-        } catch (IOException e) {
-            DLog.warn(e.getMessage());
-            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
-        }
+//        try {
+//            host.initialize();
+//        } catch (SocketTimeoutException e) {
+//            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
+//            throw new ConnectionTimeoutException();
+//        } catch (IOException e) {
+//            DLog.warn(e.getMessage());
+//            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
+//        }
+
+        new Thread(host).start();
         return host;
     }
 
@@ -145,7 +118,8 @@ public abstract class Com {
             throw new BadIdException();
     }
 
-    public synchronized void start() {
+    public void start() {
+        if(runnign) return;
         exec.execute(outWorker);
         exec.execute(inWorker);
         exec.execute(dispatcher);
