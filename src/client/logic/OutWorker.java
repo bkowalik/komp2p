@@ -38,11 +38,11 @@ public class OutWorker implements Runnable {
                         output.flush();
                         output.reset();
                     } catch (SocketException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                         fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.SocketException));
                         break;
                     } catch (IOException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                         fireConnectionEvent(new ConnectionEvent(this, e.getMessage(), Type.IOException));
                         break;
                     }

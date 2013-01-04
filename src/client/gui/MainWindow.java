@@ -81,57 +81,55 @@ public class MainWindow extends JFrame {
         btnConnect = new JButton("Połącz");
         btnConnect.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                int port = 0;
-                try {
-                    if(fieldPort.getText().equals("") && fieldNick.getText().equals("") && fieldHost.getText().equals("")) {
-                        JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
-                        return;
-                    }
-                    port = Integer.parseInt(fieldPort.getText());
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+            int port = 0;
+            try {
+                if(fieldPort.getText().equals("") && fieldNick.getText().equals("") && fieldHost.getText().equals("")) {
+                    JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
                     return;
                 }
-                
-                try {
-                    Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
-                    MainWindow.this.setVisible(false);
-                    TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
-                    c.addConnectionListener(talkWindow.getConnectionListener());
-                    talkWindow.setVisible(true);
-                    c.start();
-                } catch(HostException e) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Host nieosiągalny", "Błąd", JOptionPane.ERROR_MESSAGE, null);
-                } catch (ComException e) {
-                    e.printStackTrace();
-                }
+                port = Integer.parseInt(fieldPort.getText());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+                return;
+            }
+            try {
+                Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
+                TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
+                MainWindow.this.setVisible(false);
+                talkWindow.setVisible(true);
+                c.start();
+            } catch(HostException e) {
+                JOptionPane.showMessageDialog(MainWindow.this, "Host nieosiągalny", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+            } catch (ComException e) {
+                e.printStackTrace();
+            }
             }
         });
         
         btnHost = new JButton("Hostuj");
         btnHost.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                int port = 0;
-                try {
-                    if(fieldPort.getText().equals("") || fieldNick.getText().equals("")) {
-                        JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
-                        return;
-                    }
-                    port = Integer.parseInt(fieldPort.getText());
-                } catch(NumberFormatException e) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+            int port = 0;
+            try {
+                if(fieldPort.getText().equals("") || fieldNick.getText().equals("")) {
+                    JOptionPane.showMessageDialog(MainWindow.this, "Proszę wypełnić wszystkie pola", "Błąd", JOptionPane.WARNING_MESSAGE, null);
                     return;
                 }
+                port = Integer.parseInt(fieldPort.getText());
 
-                try {  
-                    Com c = Com.newHost(port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
-                    MainWindow.this.setVisible(false);
-                    TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
-                    c.addConnectionListener(talkWindow.getConnectionListener());
-                    talkWindow.setVisible(true);
-                } catch (ComException e) {
-                    e.printStackTrace();
-                }
+            } catch(NumberFormatException e) {
+                JOptionPane.showMessageDialog(MainWindow.this, "Niewłaściwy numer portu", "Błąd", JOptionPane.ERROR_MESSAGE, null);
+                return;
+            }
+
+            try {
+                Com c = Com.newHost(port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
+                MainWindow.this.setVisible(false);
+                TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
+                talkWindow.setVisible(true);
+            } catch (ComException e) {
+                e.printStackTrace();
+            }
             }
         });
         GroupLayout gl_panel = new GroupLayout(panel);

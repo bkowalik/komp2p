@@ -68,6 +68,10 @@ public class TalkWindow extends JFrame {
         }
     }
 
+    private enum State {
+        TALKING, NOT_TALKING;
+    }
+
     private class ConLstn implements ConnectionListener {
         @Override
         public void onConnectionEvent(ConnectionEvent event) {
@@ -75,12 +79,11 @@ public class TalkWindow extends JFrame {
             case ConnectionEstablished:
                 DLog.info(ConnectionEvent.Type.ConnectionEstablished.toString());
                 TalkWindow.this.textChat.append("SYSTEM: Połączenie ustanowione." + '\n');
-                TalkWindow.this.textMsg.setEnabled(true);
-                TalkWindow.this.btnSend.setEnabled(true);
+                switchGUI(State.TALKING);
                 break;
             case RemoteHostDisconnect:
             case TimeoutException:
-//            case SocketException:
+            case SocketException:
             case EOFException:
                 JOptionPane.showMessageDialog(TalkWindow.this,
                         "Rozmówca rozłączył się " + event.getType().toString(), "Informacja",
@@ -114,7 +117,6 @@ public class TalkWindow extends JFrame {
         splitPane_1.setLeftComponent(scrollPane);
 
         textMsg = new JTextArea();
-        //textMsg.setEnabled(false);
         textMsg.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
@@ -131,7 +133,6 @@ public class TalkWindow extends JFrame {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
         btnSend = new JButton("Wyślij");
-        //btnSend.setEnabled(false);
         btnSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 performSending();
@@ -153,17 +154,29 @@ public class TalkWindow extends JFrame {
         splitPane.setLeftComponent(scrollPane_1);
 
         textChat = new JTextArea();
-        textChat.setEditable(false);
         scrollPane_1.setViewportView(textChat);
-        //textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
+//        textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
 
         com.addMessageListener(new MessageLstn());
-//        com.addConnectionListener(conLst);
+        com.addConnectionListener(conLst);
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        DLog.info("Obiekt powstał");
+        switchGUI(State.NOT_TALKING);
+    }
+
+    private void switchGUI(State state) {
+        switch(state) {
+            case TALKING:
+                btnSend.setEnabled(true);
+                textMsg.setEnabled(true);
+                break;
+            case NOT_TALKING:
+                btnSend.setEnabled(false);
+                textMsg.setEnabled(false);
+                break;
+        }
     }
 
     private void performSending() {

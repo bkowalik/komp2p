@@ -31,7 +31,6 @@ class Host extends Com implements Runnable {
         } catch(IOException e) {
             e.printStackTrace();
         }
-//        fireConnectionEvent(new ConnectionEvent(this, null, ConnectionEvent.Type.ConnectionEstablished));
         start();
     }
 

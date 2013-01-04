@@ -1,21 +1,17 @@
 package client.logic;
 
-import java.io.BufferedInputStream;
+import agh.po.Message;
+import client.event.ConnectionEvent;
+import client.event.ConnectionEvent.Type;
+import client.event.ConnectionListener;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.List;
 import java.util.Queue;
-
-import agh.po.Message;
-import client.DLog;
-import client.event.ConnectionEvent;
-import client.event.ConnectionEvent.Type;
-import client.event.ConnectionListener;
-import client.exception.ConnectionClosedException;
 
 /**
  * Przyjmuje wiadomości przychodzące
@@ -27,13 +23,14 @@ public class InWorker implements Runnable /* Callable<Void> */{
 
     public InWorker(InputStream in, Queue<Message> messages,
             Queue<ConnectionListener> cls) throws IOException {
-        input = new ObjectInputStream(/*new BufferedInputStream(in)*/in);
+        input = new ObjectInputStream(in);
         this.messages = messages;
         conListeners = cls;
     }
 
     @Override
     public void run() {
+        fireConnectionEvent(new ConnectionEvent(this, null, Type.ConnectionEstablished));
         while (!Thread.interrupted()) {
             try {
                 Message msg = null;
@@ -43,22 +40,22 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 msg = (Message) obj;
                 messages.add(msg);
             } catch (SocketException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.SocketException));
                 break;
             } catch (SocketTimeoutException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.TimeoutException));
                 break;
             } catch (EOFException e) {
-                e.printStackTrace();
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+//                e.printStackTrace();
+                fireConnectionEvent(new ConnectionEvent(this, e.getCause().getMessage(),
                         Type.EOFException));
                 break;
             } catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.IOException));
                 break;

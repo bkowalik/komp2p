@@ -1,7 +1,6 @@
 package client.logic;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -35,7 +34,7 @@ public abstract class Com {
     protected String id;
     protected ExecutorService exec = Executors.newFixedThreadPool(3);
     
-    private boolean runnign;
+    private boolean running;
     
     private final BlockingQueue<Message> inMessages = new LinkedBlockingQueue<Message>();
     private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
@@ -65,7 +64,7 @@ public abstract class Com {
             e.printStackTrace();
         }
 
-        client.start();
+//        client.start();
         return client;
     }
 
@@ -79,16 +78,6 @@ public abstract class Com {
             DLog.warn(e.getMessage());
             throw new ComException(e.getMessage());
         }
-
-//        try {
-//            host.initialize();
-//        } catch (SocketTimeoutException e) {
-//            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
-//            throw new ConnectionTimeoutException();
-//        } catch (IOException e) {
-//            DLog.warn(e.getMessage());
-//            try { host.server.close(); } catch (IOException e1) { DLog.warn(e.getMessage());  }
-//        }
 
         new Thread(host).start();
         return host;
@@ -117,23 +106,21 @@ public abstract class Com {
     }
 
     public synchronized void start() {
-        if(runnign) return;
+        if(running) return;
         exec.execute(outWorker);
         exec.execute(inWorker);
         exec.execute(dispatcher);
-        runnign = true;
-        System.out.println("Jak jest: " + conListener.isEmpty());
-        fireConnectionEvent(new ConnectionEvent(this, null, ConnectionEvent.Type.ConnectionEstablished));
+        running = true;
     }
 
     public synchronized void stop() {
-        if(!runnign) return;
+        if(!running) return;
         exec.shutdownNow();
         try {
             socket.close();
         } catch (IOException e) {
         }
-        runnign = false;
+        running = false;
     }
 
     public synchronized void addMessageListener(MessageListener lst) {
@@ -145,14 +132,14 @@ public abstract class Com {
     }
     
     public synchronized void fireConnectionEvent(ConnectionEvent event) {
-        if(!runnign) return;
+        if(!running) return;
         for(ConnectionListener c : conListener) {
             c.onConnectionEvent(event);
         }
     }
     
     public void writeMessage(String msg) {
-        if(runnign)
+        if(running)
             outMessages.add(new Message(id, msg));
     }
 
