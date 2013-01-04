@@ -33,6 +33,7 @@ public class TalkWindow extends JFrame {
     private JButton btnSend;
     private JButton btnDiscon;
     private final JFrame parent;
+    private final ConnectionListener conLst = new ConLstn();
 
     private class WindowEvents implements WindowListener {
         @Override
@@ -86,9 +87,9 @@ public class TalkWindow extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE, null);
                 TalkWindow.this.textMsg.setEnabled(false);
                 TalkWindow.this.btnSend.setEnabled(false);
+                com.stop();
                 break;
             }
-            com.stop();
         }
     }
 
@@ -97,6 +98,7 @@ public class TalkWindow extends JFrame {
         this.parent = parent;
         com = c;
         addWindowListener(new WindowEvents());
+
         JSplitPane splitPane = new JSplitPane();
         splitPane.setResizeWeight(0.7);
         splitPane.setEnabled(false);
@@ -156,12 +158,12 @@ public class TalkWindow extends JFrame {
         //textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
 
         com.addMessageListener(new MessageLstn());
-        com.addConnectionListener(new ConLstn());
+//        com.addConnectionListener(conLst);
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        setVisible(true);
+        DLog.info("Obiekt powstał");
     }
 
     private void performSending() {
@@ -171,5 +173,9 @@ public class TalkWindow extends JFrame {
         textChat.append(TalkWindow.this.com.getID() + ": " + msg
                 + '\n');
         com.writeMessage(msg);
+    }
+
+    public ConnectionListener getConnectionListener() {
+        return conLst;
     }
 }

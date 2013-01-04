@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 
 import agh.po.Message;
@@ -16,9 +17,9 @@ import client.event.ConnectionListener;
 public class OutWorker implements Runnable {
     private final ObjectOutputStream output;
     private final BlockingQueue<Message> messages;
-    private final List<ConnectionListener> conListeners;
+    private final Queue<ConnectionListener> conListeners;
 
-    public OutWorker(OutputStream out, BlockingQueue<Message> messages, List<ConnectionListener> cls)
+    public OutWorker(OutputStream out, BlockingQueue<Message> messages, Queue<ConnectionListener> cls)
             throws IOException {
         output = new ObjectOutputStream(new BufferedOutputStream(out));
         output.flush();

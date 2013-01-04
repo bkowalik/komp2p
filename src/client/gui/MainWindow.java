@@ -94,14 +94,12 @@ public class MainWindow extends JFrame {
                 }
                 
                 try {
-                    final Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText()); 
-                    SwingUtilities.invokeLater(new Runnable() { 
-                        @Override
-                        public void run() {
-                            MainWindow.this.setVisible(false);
-                            TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());                        
-                        }
-                    });
+                    Com c = Com.newClient(fieldHost.getText(), port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
+                    MainWindow.this.setVisible(false);
+                    TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
+                    c.addConnectionListener(talkWindow.getConnectionListener());
+                    talkWindow.setVisible(true);
+                    c.start();
                 } catch(HostException e) {
                     JOptionPane.showMessageDialog(MainWindow.this, "Host nieosiągalny", "Błąd", JOptionPane.ERROR_MESSAGE, null);
                 } catch (ComException e) {
@@ -126,14 +124,11 @@ public class MainWindow extends JFrame {
                 }
 
                 try {  
-                    final Com c = Com.newHost(port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());                     
-                    SwingUtilities.invokeLater(new Runnable() { 
-                        @Override
-                        public void run() {
-                            MainWindow.this.setVisible(false);
-                            new TalkWindow(MainWindow.this, c, fieldNick.getText());                        
-                        }
-                    });
+                    Com c = Com.newHost(port, Com.DEFAULT_CONNECTION_TIMEOUT, fieldNick.getText());
+                    MainWindow.this.setVisible(false);
+                    TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
+                    c.addConnectionListener(talkWindow.getConnectionListener());
+                    talkWindow.setVisible(true);
                 } catch (ComException e) {
                     e.printStackTrace();
                 }

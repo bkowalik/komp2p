@@ -7,10 +7,8 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Queue;
+import java.util.concurrent.*;
 
 import agh.po.Message;
 import client.DLog;
@@ -43,7 +41,7 @@ public abstract class Com {
     private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
     
     private final List<MessageListener> msgsListeners = new LinkedList<MessageListener>();
-    final List<ConnectionListener> conListener = new LinkedList<ConnectionListener>();
+    final Queue<ConnectionListener> conListener = new ConcurrentLinkedQueue<ConnectionListener>();
 
     public static Com newClient(String address, int port, int timeout, String id)
             throws ComException {
@@ -118,12 +116,14 @@ public abstract class Com {
             throw new BadIdException();
     }
 
-    public void start() {
+    public synchronized void start() {
         if(runnign) return;
         exec.execute(outWorker);
         exec.execute(inWorker);
         exec.execute(dispatcher);
         runnign = true;
+        System.out.println("Jak jest: " + conListener.isEmpty());
+        fireConnectionEvent(new ConnectionEvent(this, null, ConnectionEvent.Type.ConnectionEstablished));
     }
 
     public synchronized void stop() {
@@ -145,8 +145,10 @@ public abstract class Com {
     }
     
     public synchronized void fireConnectionEvent(ConnectionEvent event) {
-        for(ConnectionListener c : conListener)
+        if(!runnign) return;
+        for(ConnectionListener c : conListener) {
             c.onConnectionEvent(event);
+        }
     }
     
     public void writeMessage(String msg) {

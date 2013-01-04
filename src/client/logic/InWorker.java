@@ -23,10 +23,10 @@ import client.exception.ConnectionClosedException;
 public class InWorker implements Runnable /* Callable<Void> */{
     protected final Queue<Message> messages;
     protected final ObjectInputStream input;
-    private final List<ConnectionListener> conListeners;
+    private final Queue<ConnectionListener> conListeners;
 
     public InWorker(InputStream in, Queue<Message> messages,
-            List<ConnectionListener> cls) throws IOException {
+            Queue<ConnectionListener> cls) throws IOException {
         input = new ObjectInputStream(/*new BufferedInputStream(in)*/in);
         this.messages = messages;
         conListeners = cls;
