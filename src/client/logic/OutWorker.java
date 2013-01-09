@@ -5,33 +5,33 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 
-import agh.po.Message;
+import agh.po.Msg;
 import client.event.ConnectionEvent;
 import client.event.ConnectionEvent.Type;
 import client.event.ConnectionListener;
 
 public class OutWorker implements Runnable {
     private final ObjectOutputStream output;
-    private final BlockingQueue<Message> messages;
+    private final BlockingQueue<Msg> msgs;
     private final Queue<ConnectionListener> conListeners;
 
-    public OutWorker(OutputStream out, BlockingQueue<Message> messages, Queue<ConnectionListener> cls)
+    public OutWorker(OutputStream out, BlockingQueue<Msg> msgs, Queue<ConnectionListener> cls)
             throws IOException {
         output = new ObjectOutputStream(new BufferedOutputStream(out));
         output.flush();
-        this.messages = messages;
+        this.msgs = msgs;
         conListeners = cls;
     }
 
     @Override
     public void run() {
+//        fireConnectionEvent(new ConnectionEvent(this, null, Type.ConnectionEstablished));
         try {
             while (!Thread.interrupted()) {
-                Message msg = messages.take();
+                Msg msg = msgs.take();
                 if (msg != null) {
                     try {
                         output.writeObject(msg);
@@ -55,7 +55,9 @@ public class OutWorker implements Runnable {
     }
 
     protected synchronized void fireConnectionEvent(ConnectionEvent event) {
+        System.out.println("Odpalam");
         for(ConnectionListener e : conListeners) {
+            System.out.println("Jest listener");
             e.onConnectionEvent(event);
         }
     }

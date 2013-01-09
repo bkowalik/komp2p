@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.SwingUtilities;
 
-import agh.po.Message;
+import agh.po.Msg;
 import client.event.MessageEvent;
 import client.event.MessageListener;
 import client.exception.ComException;
@@ -40,7 +40,7 @@ public class Main {
                 com = Com.newClient(host, port, Com.DEFAULT_CONNECTION_TIMEOUT, id);
             } else throw new IllegalArgumentException("Nie można tak");
         }
-        final Queue<Message> q = new ConcurrentLinkedQueue<Message>();
+        final Queue<Msg> q = new ConcurrentLinkedQueue<Msg>();
         com.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(MessageEvent event) {
@@ -61,7 +61,7 @@ public class Main {
 
             if(!q.isEmpty()) System.out.println("Odczytuje wiadomości:");
             while(!q.isEmpty()) {
-                Message m = q.poll();
+                Msg m = q.poll();
                 System.out.println(m);
             }
             System.out.println();

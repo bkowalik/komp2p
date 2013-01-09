@@ -8,7 +8,7 @@ public class ConnectionEvent extends EventObject {
     
     public static enum Type {
         TimeoutException, RemoteHostDisconnect, SocketException,
-        EOFException, IOException, ConnectionEstablished;
+        EOFException, IOException, ConnectionEstablished, UnknownHost;
     }
     
     public ConnectionEvent(Object source, String cause, Type e) {

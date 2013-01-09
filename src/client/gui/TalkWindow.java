@@ -8,6 +8,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.net.InetAddress;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,13 +26,13 @@ import client.event.MessageListener;
 import client.logic.Com;
 
 public class TalkWindow extends JFrame {
-    private JTextArea textChat;
-    private JTextArea textMsg;
+    private JTextArea textChat = new JTextArea();
+    private JTextArea textMsg = new JTextArea();;
     private final Com com;
     private static final int DEFAULT_WIDTH = 450;
     private static final int DEFAULT_HEIGHT = 350;
-    private JButton btnSend;
-    private JButton btnDiscon;
+    private JButton btnSend = new JButton("Wyślij");;
+    private JButton btnDiscon = new JButton("Rozłącz");;
     private final JFrame parent;
     private final ConnectionListener conLst = new ConLstn();
 
@@ -77,16 +78,22 @@ public class TalkWindow extends JFrame {
         public void onConnectionEvent(ConnectionEvent event) {
             switch (event.getType()) {
             case ConnectionEstablished:
-                DLog.info(ConnectionEvent.Type.ConnectionEstablished.toString());
+//                DLog.info(ConnectionEvent.Type.ConnectionEstablished.toString());
                 TalkWindow.this.textChat.append("SYSTEM: Połączenie ustanowione." + '\n');
                 switchGUI(State.TALKING);
                 break;
-            case RemoteHostDisconnect:
+            case UnknownHost:
+                JOptionPane.showMessageDialog(TalkWindow.this, "Host jest nieosiągalny.", "Błąd!", JOptionPane.ERROR_MESSAGE, null);
+                break;
             case TimeoutException:
-            case SocketException:
+                JOptionPane.showMessageDialog(TalkWindow.this, "Przekroczono czas połączenia.", "Błąd!", JOptionPane.ERROR_MESSAGE, null);
+                break;
+            case RemoteHostDisconnect:
+//            case SocketException:
             case EOFException:
+                Thread.interrupted();
                 JOptionPane.showMessageDialog(TalkWindow.this,
-                        "Rozmówca rozłączył się " + event.getType().toString(), "Informacja",
+                        "Rozmówca rozłączył się" /*+ " " + event.getType().toString()*/, "Informacja",
                         JOptionPane.INFORMATION_MESSAGE, null);
                 TalkWindow.this.textMsg.setEnabled(false);
                 TalkWindow.this.btnSend.setEnabled(false);
@@ -97,9 +104,17 @@ public class TalkWindow extends JFrame {
     }
 
     public TalkWindow(JFrame parent, Com c, String who) {
-        setTitle("Komunikator - rozmowa jako " + who);
         this.parent = parent;
         com = c;
+
+        textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
+        switchGUI(State.NOT_TALKING);
+
+        com.addConnectionListener(conLst);
+        com.addMessageListener(new MessageLstn());
+
+        setTitle("Komunikator - rozmowa jako " + who);
+
         addWindowListener(new WindowEvents());
 
         JSplitPane splitPane = new JSplitPane();
@@ -116,7 +131,6 @@ public class TalkWindow extends JFrame {
         JScrollPane scrollPane = new JScrollPane();
         splitPane_1.setLeftComponent(scrollPane);
 
-        textMsg = new JTextArea();
         textMsg.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
@@ -132,7 +146,6 @@ public class TalkWindow extends JFrame {
         splitPane_1.setRightComponent(panel);
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-        btnSend = new JButton("Wyślij");
         btnSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 performSending();
@@ -140,7 +153,6 @@ public class TalkWindow extends JFrame {
         });
         panel.add(btnSend);
 
-        btnDiscon = new JButton("Rozłącz");
         btnDiscon.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 TalkWindow.this.btnSend.setEnabled(false);
@@ -153,17 +165,12 @@ public class TalkWindow extends JFrame {
         JScrollPane scrollPane_1 = new JScrollPane();
         splitPane.setLeftComponent(scrollPane_1);
 
-        textChat = new JTextArea();
+        textChat.setEditable(false);
         scrollPane_1.setViewportView(textChat);
-//        textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
-
-        com.addMessageListener(new MessageLstn());
-        com.addConnectionListener(conLst);
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        switchGUI(State.NOT_TALKING);
     }
 
     private void switchGUI(State state) {

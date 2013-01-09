@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 
-import agh.po.Message;
+import agh.po.Msg;
 import client.DLog;
 import client.event.ConnectionEvent;
 import client.event.ConnectionListener;
@@ -20,27 +20,58 @@ import client.exception.ComException;
 import client.exception.ConnectionTimeoutException;
 import client.exception.HostException;
 
+/**
+ * Common interface for communication classes.
+ * @author Bartosz Kowalik
+ */
 public abstract class Com {
+    /**
+     * Validation max port number.
+     */
     public static final int MAX_PORT = 65535;
+    /**
+     * Validation minumum port.
+     */
     public static final int MIN_PORT = 0;
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 30000;
+    /**
+     * Default connection timeout.
+     */
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
+    /**
+     * Default idle timeout.
+     */
     public static final int DEFAULT_IDLE_TIMEOUT = 2000;
+    /**
+     * Default connection port.
+     */
     public static final int DEFAULT_PORT = 44321;
-    
+
+    /**
+     * Connection socket.
+     */
     protected Socket socket;
+    /**
+     * Incomming messages thread.
+     */
     protected InWorker inWorker;
+    /**
+     * Outcomming messages thread.
+     */
     protected OutWorker outWorker;
+    /**
+     * Message dispatcher thread. It is unnecessary but offloads incomming messages thread.
+     */
     protected Dispatcher dispatcher;
     protected String id;
     protected ExecutorService exec = Executors.newFixedThreadPool(3);
     
     private boolean running;
     
-    private final BlockingQueue<Message> inMessages = new LinkedBlockingQueue<Message>();
-    private final BlockingQueue<Message> outMessages = new LinkedBlockingQueue<Message>();
+    private final BlockingQueue<Msg> inMsgs = new LinkedBlockingQueue<Msg>();
+    private final BlockingQueue<Msg> outMsgs = new LinkedBlockingQueue<Msg>();
     
     private final List<MessageListener> msgsListeners = new LinkedList<MessageListener>();
-    final Queue<ConnectionListener> conListener = new ConcurrentLinkedQueue<ConnectionListener>();
+    private final Queue<ConnectionListener> conListener = new ConcurrentLinkedQueue<ConnectionListener>();
 
     public static Com newClient(String address, int port, int timeout, String id)
             throws ComException {
@@ -56,15 +87,17 @@ public abstract class Com {
             throw new ComException(e.getMessage());
         }
 
-        try {
-            client.initialize();
-        } catch (SocketTimeoutException e) {
-            throw new ConnectionTimeoutException();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            client.initialize();
+//        } catch (SocketTimeoutException e) {
+//            throw new ConnectionTimeoutException();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 //        client.start();
+
+        new Thread(client).start();
         return client;
     }
 
@@ -87,14 +120,14 @@ public abstract class Com {
         if (socket == null)
             throw new NullPointerException();
         try {
-            outWorker = new OutWorker(socket.getOutputStream(), outMessages, conListener);
-            inWorker = new InWorker(socket.getInputStream(), inMessages, conListener);
+            outWorker = new OutWorker(socket.getOutputStream(), outMsgs, conListener);
+            inWorker = new InWorker(socket.getInputStream(), inMsgs, conListener);
         } catch (IOException e) {
             DLog.warn(e.getMessage());
             stop();
             throw new IOException(e.getCause());
         }
-        dispatcher = new Dispatcher(inMessages, msgsListeners);
+        dispatcher = new Dispatcher(inMsgs, msgsListeners);
     }
 
     private static void validateInitData(int port, String id)
@@ -132,7 +165,7 @@ public abstract class Com {
     }
     
     public synchronized void fireConnectionEvent(ConnectionEvent event) {
-        if(!running) return;
+//        if(!running) return;
         for(ConnectionListener c : conListener) {
             c.onConnectionEvent(event);
         }
@@ -140,7 +173,7 @@ public abstract class Com {
     
     public void writeMessage(String msg) {
         if(running)
-            outMessages.add(new Message(id, msg));
+            outMsgs.add(new Msg(id, msg));
     }
 
     public String getID() {

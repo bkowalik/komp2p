@@ -1,6 +1,6 @@
 package client.logic;
 
-import agh.po.Message;
+import agh.po.Msg;
 import client.event.ConnectionEvent;
 import client.event.ConnectionEvent.Type;
 import client.event.ConnectionListener;
@@ -17,14 +17,14 @@ import java.util.Queue;
  * Przyjmuje wiadomości przychodzące
  */
 public class InWorker implements Runnable /* Callable<Void> */{
-    protected final Queue<Message> messages;
+    protected final Queue<Msg> msgs;
     protected final ObjectInputStream input;
     private final Queue<ConnectionListener> conListeners;
 
-    public InWorker(InputStream in, Queue<Message> messages,
+    public InWorker(InputStream in, Queue<Msg> msgs,
             Queue<ConnectionListener> cls) throws IOException {
         input = new ObjectInputStream(in);
-        this.messages = messages;
+        this.msgs = msgs;
         conListeners = cls;
     }
 
@@ -33,12 +33,12 @@ public class InWorker implements Runnable /* Callable<Void> */{
         fireConnectionEvent(new ConnectionEvent(this, null, Type.ConnectionEstablished));
         while (!Thread.interrupted()) {
             try {
-                Message msg = null;
+                Msg msg = null;
                 Object obj = input.readObject();
-                if (!(obj instanceof Message))
+                if (!(obj instanceof Msg))
                     continue;
-                msg = (Message) obj;
-                messages.add(msg);
+                msg = (Msg) obj;
+                msgs.add(msg);
             } catch (SocketException e) {
 //                e.printStackTrace();
                 fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
@@ -51,7 +51,7 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 break;
             } catch (EOFException e) {
 //                e.printStackTrace();
-                fireConnectionEvent(new ConnectionEvent(this, e.getCause().getMessage(),
+                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
                         Type.EOFException));
                 break;
             } catch (IOException e) {

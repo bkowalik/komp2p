@@ -97,7 +97,7 @@ public class MainWindow extends JFrame {
                 TalkWindow talkWindow = new TalkWindow(MainWindow.this, c, fieldNick.getText());
                 MainWindow.this.setVisible(false);
                 talkWindow.setVisible(true);
-                c.start();
+//                c.start();
             } catch(HostException e) {
                 JOptionPane.showMessageDialog(MainWindow.this, "Host nieosiągalny", "Błąd", JOptionPane.ERROR_MESSAGE, null);
             } catch (ComException e) {
