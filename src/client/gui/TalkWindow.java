@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -66,6 +67,7 @@ public class TalkWindow extends JFrame {
         @Override
         public void onMessageReceived(MessageEvent event) {
             textChat.append(event.getMessage().toString() + '\n');
+            textChat.setCaretPosition(textChat.getDocument().getLength());
         }
     }
 
@@ -89,7 +91,7 @@ public class TalkWindow extends JFrame {
                 JOptionPane.showMessageDialog(TalkWindow.this, "Przekroczono czas połączenia.", "Błąd!", JOptionPane.ERROR_MESSAGE, null);
                 break;
             case RemoteHostDisconnect:
-//            case SocketException:
+            case SocketException:
             case EOFException:
                 Thread.interrupted();
                 JOptionPane.showMessageDialog(TalkWindow.this,
@@ -107,12 +109,17 @@ public class TalkWindow extends JFrame {
         this.parent = parent;
         com = c;
 
-        textChat.append("SYSTEM: Oczekuje na połączenie."+'\n');
+        textChat.append("SYSTEM: Oczekuje na połączenie." + '\n');
         switchGUI(State.NOT_TALKING);
 
         com.addConnectionListener(conLst);
         com.addMessageListener(new MessageLstn());
 
+        try {
+            textChat.append("SYSTEM: " + InetAddress.getLocalHost().getHostAddress().toString() + ": " + c.getPort() + '\n');
+        } catch (UnknownHostException e) {
+
+        }
         setTitle("Komunikator - rozmowa jako " + who);
 
         addWindowListener(new WindowEvents());

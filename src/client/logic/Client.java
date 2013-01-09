@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
 
 class Client extends Com implements Runnable {
     private final String address;
-    private final int port;
     private final int timeout;
 
     public Client(String address, int port, int timeout, String id) throws IOException {

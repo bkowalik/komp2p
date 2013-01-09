@@ -45,7 +45,6 @@ public abstract class Com {
      * Default connection port.
      */
     public static final int DEFAULT_PORT = 44321;
-
     /**
      * Connection socket.
      */
@@ -66,6 +65,7 @@ public abstract class Com {
     protected ExecutorService exec = Executors.newFixedThreadPool(3);
     
     private boolean running;
+    protected int port;
     
     private final BlockingQueue<Msg> inMsgs = new LinkedBlockingQueue<Msg>();
     private final BlockingQueue<Msg> outMsgs = new LinkedBlockingQueue<Msg>();
@@ -178,5 +178,9 @@ public abstract class Com {
 
     public String getID() {
         return id;
+    }
+
+    public int getPort() {
+        return port;
     }
 }

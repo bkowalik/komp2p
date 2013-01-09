@@ -13,6 +13,7 @@ class Host extends Com implements Runnable {
 
     public Host(int port, int timeout, String id) throws IOException {
         this.id = id;
+        this.port = port;
         server = new ServerSocket(port);
     }
 

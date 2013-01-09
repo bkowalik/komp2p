@@ -41,7 +41,7 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 msgs.add(msg);
             } catch (SocketException e) {
 //                e.printStackTrace();
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                fireConnectionEvent(new ConnectionEvent(this, null,
                         Type.SocketException));
                 break;
             } catch (SocketTimeoutException e) {
@@ -51,7 +51,7 @@ public class InWorker implements Runnable /* Callable<Void> */{
                 break;
             } catch (EOFException e) {
 //                e.printStackTrace();
-                fireConnectionEvent(new ConnectionEvent(this, e.getMessage(),
+                fireConnectionEvent(new ConnectionEvent(this, null,
                         Type.EOFException));
                 break;
             } catch (IOException e) {
