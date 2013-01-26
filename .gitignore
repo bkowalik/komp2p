@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿*.iml
 *.class
 .classpath
@@ -10,3 +11,11 @@ komunikator.iml
 bin/
 .idea/
 out/
+=======
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+>>>>>>> 2bafba8e31281ab7db16fdd2ba8cec4681482bcc
