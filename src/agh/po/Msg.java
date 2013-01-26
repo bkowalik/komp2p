@@ -3,27 +3,23 @@ package agh.po;
 import java.io.Serializable;
 
 /**
- *
+ * Basic protocol class.
  */
 public class Msg implements Serializable {
-    /**
-     *
-     */
     private static final long serialVersionUID = -7287335892272393745L; //Msg
-//    private static final long serialVersionUID = 6957732562810464788L; //Message
     /**
-     *
+     * Identyficator of sending person
      */
-    public final String id; //id rozmówcy
+    public final String id;
     /**
-     *
+     * Message content.
      */
-    public final String msg; //treść wiadomości
+    public final String msg;
 
     /**
-     *
-     * @param id
-     * @param msg
+     * Allows to initialize message
+     * @param id identification
+     * @param msg message content
      */
     public Msg(String id, String msg) {
         this.id = id;
@@ -32,7 +28,7 @@ public class Msg implements Serializable {
 
     /**
      *
-     * @return
+     * @return String representation of message
      */
     @Override
     public String toString() {

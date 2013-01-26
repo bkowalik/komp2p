@@ -22,6 +22,9 @@ import client.exception.ComException;
 import client.exception.HostException;
 import client.logic.Com;
 
+/**
+ * Main window
+ */
 public class MainWindow extends JFrame {
     private JTextField fieldNick;
     private JTextField fieldPort;

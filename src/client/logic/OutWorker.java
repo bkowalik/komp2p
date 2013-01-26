@@ -13,7 +13,13 @@ import client.event.ConnectionEvent;
 import client.event.ConnectionEvent.Type;
 import client.event.ConnectionListener;
 
+/**
+ * Sending thread. It takes the message from the @see BlockingQueue and sends.
+ */
 public class OutWorker implements Runnable {
+    /**
+     *
+     */
     private final ObjectOutputStream output;
     private final BlockingQueue<Msg> msgs;
     private final Queue<ConnectionListener> conListeners;
